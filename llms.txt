@@ -1,0 +1,20 @@
+# MemoryHooker
+
+Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
+
+## Important files
+
+- README.md: public usage, configuration, providers, backends, and boundaries.
+- SECURITY.md: private vulnerability-reporting requirements.
+- PROVENANCE.md: clean-history and BACH lineage statement.
+- memoryhooker/config.py: configuration schema and safe defaults.
+- memoryhooker/backends/: local read-only retrieval adapters.
+- memoryhooker/providers/: host-specific snippet generators.
+- tests/: automated behavior and provider-contract tests.
+
+## Safety properties
+
+- The package performs no network requests.
+- Host configuration is never edited automatically.
+- The Gardener backend opens configured databases read-only.
+- Unavailable backends fail open and produce no hits.
