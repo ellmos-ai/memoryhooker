@@ -1,3 +1,5 @@
+![MemoryHooker](docs/assets/banner.svg)
+
 # MemoryHooker
 
 MemoryHooker connects local memory sources to lifecycle hooks exposed by coding
