@@ -62,3 +62,50 @@ def test_search_recurses_into_subdirectories(tmp_path: Path):
     backend = FilesBackend(tmp_path)
     hits = backend.search("gardener")
     assert hits and hits[0].source == str(Path("sub") / "nested.md")
+
+
+def test_search_ignores_stopwords(tmp_path: Path):
+    # "für" steckt als Substr in "Verfügung"/"dafür": ohne Stopwortfilter
+    # wuerde die Fuellwort-Query hier faelschlich treffen.
+    (tmp_path / "a.md").write_text(
+        "Hinweis zur Verfügung: dafür ist der Maintainer zuständig.", encoding="utf-8"
+    )
+
+    backend = FilesBackend(tmp_path)
+    assert backend.search("Rezept für Tomatensuppe") == []
+
+
+def test_search_with_keywords_still_hits(tmp_path: Path):
+    (tmp_path / "a.md").write_text(
+        "Tomatensuppe: Zwiebeln anschwitzen, Tomaten dazu.", encoding="utf-8"
+    )
+    (tmp_path / "b.md").write_text("Anderes Thema.", encoding="utf-8")
+
+    backend = FilesBackend(tmp_path)
+    hits = backend.search("Rezept für Tomatensuppe")
+    assert len(hits) == 1
+    assert hits[0].source == "a.md"
+
+
+def test_search_stopword_only_query_returns_nothing(tmp_path: Path):
+    (tmp_path / "a.md").write_text("Für das und mit dem ist alles getan.", encoding="utf-8")
+
+    backend = FilesBackend(tmp_path)
+    assert backend.search("für das und mit") == []
+
+
+def test_search_ignores_terms_shorter_than_three_chars(tmp_path: Path):
+    (tmp_path / "a.md").write_text("py py py everywhere", encoding="utf-8")
+
+    backend = FilesBackend(tmp_path)
+    assert backend.search("py") == []
+
+
+def test_search_strips_punctuation_from_terms(tmp_path: Path):
+    (tmp_path / "a.md").write_text("Die Datei heisst memoryhooker.toml", encoding="utf-8")
+
+    backend = FilesBackend(tmp_path)
+    # "?" und "." duerfen den Term nicht veraendern: "memoryhooker.toml?"
+    # als Ganzes kaeme im Text nie vor, die Tokens schon.
+    hits = backend.search("Was ist memoryhooker.toml?")
+    assert hits and hits[0].source == "a.md"
