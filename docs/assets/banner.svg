@@ -1,151 +1,263 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
-    <!-- Gradients -->
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#080d1a"/>
-      <stop offset="50%" stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#1e1b4b"/>
+    <!-- Background Sky Gradient -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070A14"/>
+      <stop offset="40%" stop-color="#0F172A"/>
+      <stop offset="85%" stop-color="#1E1B4B"/>
+      <stop offset="100%" stop-color="#2E1065"/>
     </linearGradient>
 
-    <linearGradient id="title-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#cbd5e1"/>
+    <!-- Mountain Gradient 1 (Far) -->
+    <linearGradient id="mountGradFar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
     </linearGradient>
 
-    <linearGradient id="accent-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#0284c7"/>
+    <!-- Mountain Gradient 2 (Mid) -->
+    <linearGradient id="mountGradMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
     </linearGradient>
 
-    <linearGradient id="accent-purple" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#c084fc"/>
-      <stop offset="100%" stop-color="#7e22ce"/>
-    </linearGradient>
-    
-    <linearGradient id="glow-teal" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#0d9488" stop-opacity="0.2"/>
+    <!-- Foreground Cliff Gradient -->
+    <linearGradient id="cliffGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
     </linearGradient>
 
-    <!-- Filters for Glow -->
-    <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="12" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
+    <!-- Ambient Glows -->
+    <radialGradient id="pinkGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0"/>
+    </radialGradient>
 
-    <filter id="glow-purple" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="25" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
+    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
 
-    <!-- Pattern -->
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="0.75" stroke-opacity="0.25"/>
-    </pattern>
+    <!-- Title Gradient -->
+    <linearGradient id="titleGradMemory" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+
+    <linearGradient id="jacketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="50%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+
+    <linearGradient id="brainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBCFE8"/>
+      <stop offset="40%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#DB2777"/>
+    </linearGradient>
   </defs>
 
-  <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#grid)"/>
+  <!-- Sky Background -->
+  <rect width="1200" height="630" fill="url(#skyGrad)"/>
 
-  <!-- Glowing Background Orbs -->
-  <circle cx="950" cy="220" r="180" fill="#38bdf8" opacity="0.08" filter="url(#glow-cyan)"/>
-  <circle cx="820" cy="420" r="160" fill="#a855f7" opacity="0.08" filter="url(#glow-purple)"/>
+  <!-- Stars & Celestial elements -->
+  <g opacity="0.6">
+    <circle cx="150" cy="80" r="1.5" fill="#FFFFFF"/>
+    <circle cx="280" cy="140" r="1" fill="#38BDF8"/>
+    <circle cx="420" cy="60" r="2" fill="#F472B6"/>
+    <circle cx="550" cy="110" r="1.5" fill="#FFFFFF"/>
+    <circle cx="710" cy="70" r="1" fill="#38BDF8"/>
+    <circle cx="890" cy="130" r="2.5" fill="#FFFFFF"/>
+    <circle cx="1020" cy="90" r="1.5" fill="#F472B6"/>
+    <circle cx="1140" cy="50" r="1" fill="#FFFFFF"/>
+    <circle cx="90" cy="210" r="1" fill="#FFFFFF"/>
+    <circle cx="360" cy="230" r="1.5" fill="#38BDF8"/>
+    <circle cx="640" cy="190" r="1" fill="#FFFFFF"/>
+  </g>
 
-  <!-- Left Content Area -->
-  <g transform="translate(90, 0)">
-    <!-- Badge -->
-    <g transform="translate(0, 160)">
-      <rect width="215" height="34" rx="17" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
-      <text x="107.5" y="22" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#38bdf8" text-anchor="middle" letter-spacing="1.5">ELLMOS AI • AGENT HOOK</text>
+  <!-- Ambient Glow behind mountain summit -->
+  <circle cx="950" cy="220" r="260" fill="url(#pinkGlow)"/>
+  <circle cx="300" cy="300" r="300" fill="url(#cyanGlow)"/>
+
+  <!-- Far Mountains (Layer 1) -->
+  <path d="M-50 480 L120 320 L250 410 L450 240 L620 380 L820 180 L1020 340 L1250 190 L1250 630 L-50 630 Z" fill="url(#mountGradFar)" opacity="0.7"/>
+  <!-- Far Mountain Snow Caps -->
+  <path d="M450 240 L410 290 L440 285 L450 295 L470 280 Z" fill="#38BDF8" opacity="0.5"/>
+  <path d="M820 180 L780 235 L810 230 L820 240 L850 225 Z" fill="#F472B6" opacity="0.5"/>
+
+  <!-- Mid Mountains (Layer 2) -->
+  <path d="M-50 520 L180 340 L380 460 L580 290 L790 430 L980 260 L1250 440 L1250 630 L-50 630 Z" fill="url(#mountGradMid)" opacity="0.85"/>
+  <!-- Mid Mountain Snow/Light accents -->
+  <path d="M580 290 L540 345 L570 338 L585 350 L615 330 Z" fill="#94A3B8" opacity="0.6"/>
+  <path d="M980 260 L935 320 L970 310 L985 325 L1015 305 Z" fill="#CBD5E1" opacity="0.6"/>
+
+  <!-- Foreground Mountain Ridge / Cliff Edge -->
+  <path d="M-50 630 L-50 560 L180 500 L390 440 L580 410 L750 370 L920 310 L1080 250 L1250 190 L1250 630 Z" fill="url(#cliffGrad)"/>
+  <!-- Cliff Edge Top Highlight -->
+  <path d="M-50 560 L180 500 L390 440 L580 410 L750 370 L920 310 L1080 250 L1250 190" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Dotted Trail Line on Cliff -->
+  <path d="M250 525 Q 450 460, 650 415 T 900 330" fill="none" stroke="#EC4899" stroke-width="3" stroke-dasharray="6 6" opacity="0.7"/>
+
+  <!-- ==================== CHARACTER: MOUNTAINEER (MEMORYHOOKER) ==================== -->
+  <g id="mountaineer" transform="translate(40, -10)">
+    
+    <!-- Shadow under feet -->
+    <ellipse cx="780" cy="385" rx="75" ry="14" fill="#020617" opacity="0.7"/>
+
+    <!-- Left Leg & Boot (Back Leg) -->
+    <g id="leftLeg">
+      <!-- Thigh & Calf (Pants) -->
+      <path d="M745 295 L725 345 L745 375 L765 370 L758 335 L765 295 Z" fill="#1E293B" stroke="#0F172A" stroke-width="2"/>
+      <!-- Boot -->
+      <path d="M735 365 L715 372 L710 384 L745 385 L750 370 Z" fill="#78350F" stroke="#451A03" stroke-width="2"/>
+      <!-- Crampons on Left Boot -->
+      <path d="M708 384 L747 385 M712 384 L710 391 M722 384 L720 392 M734 384 L733 392 M744 385 L744 391" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
     </g>
 
-    <!-- Main Title -->
-    <text x="0" y="260" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="800" fill="url(#title-grad)" letter-spacing="-1">MemoryHooker</text>
+    <!-- Right Leg & Boot (Front Leg - Striding uphill) -->
+    <g id="rightLeg">
+      <!-- Thigh & Calf (Pants) -->
+      <path d="M775 295 L800 335 L815 365 L835 360 L818 325 L795 295 Z" fill="#334155" stroke="#0F172A" stroke-width="2"/>
+      <!-- Knee Pad -->
+      <rect x="795" y="325" width="18" height="18" rx="4" fill="#475569" stroke="#1E293B" stroke-width="1.5"/>
+      <!-- Boot -->
+      <path d="M805 358 L828 355 L842 372 L800 376 Z" fill="#9A3412" stroke="#451A03" stroke-width="2"/>
+      <!-- Yellow Boot Laces -->
+      <path d="M815 358 L822 366 M820 357 L827 364" stroke="#F59E0B" stroke-width="2"/>
+      <!-- Crampons on Right Boot -->
+      <path d="M798 376 L844 372 M803 376 L802 383 M816 375 L815 383 M828 374 L828 382 M840 373 L841 380" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
 
-    <!-- Tagline -->
-    <text x="0" y="315" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="400" fill="#94a3b8">Agent-Agnostic Session Recall Hook for LLM CLIs</text>
+    <!-- Backpack Body (Behind Torso) -->
+    <g id="backpack">
+      <!-- Backpack Main Bag -->
+      <rect x="700" y="195" width="55" height="95" rx="12" fill="#374151" stroke="#1F2937" stroke-width="3"/>
+      <!-- Side Pockets & Straps -->
+      <rect x="692" y="215" width="12" height="50" rx="4" fill="#4B5563"/>
+      <path d="M700 225 L755 225 M700 255 L755 255" stroke="#F59E0B" stroke-width="3.5" stroke-dasharray="12 4"/>
+      <!-- Coiled Climbing Rope attached to backpack -->
+      <path d="M690 250 C 675 255, 675 285, 690 290 C 705 295, 705 260, 690 265" fill="none" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/>
+      <path d="M692 252 C 677 257, 677 287, 692 292" fill="none" stroke="#FBBF24" stroke-width="2"/>
 
-    <!-- Subtitle / Short Description -->
-    <text x="0" y="348" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="400" fill="#64748b">Injects relevant local memories into Claude Code, Codex &amp; Kimi prompts</text>
+      <!-- ==================== MEMORYHOOKER SPECIAL: ROSA GEHIRN IN BACKPACK ==================== -->
+      <g id="brainInBackpack">
+        <!-- Open Backpack Flap folded back -->
+        <path d="M698 198 C 685 185, 680 205, 695 210 Z" fill="#4B5563" stroke="#1F2937" stroke-width="2"/>
+        
+        <!-- Soft Pink Glow behind brain -->
+        <circle cx="730" cy="170" r="30" fill="url(#pinkGlow)"/>
 
-    <!-- Feature Badges/Pills -->
-    <g transform="translate(0, 415)">
-      <!-- Pill 1 -->
+        <!-- Brain Lobe Base Shape -->
+        <path d="M705 182 C 695 170, 700 148, 718 145 C 722 135, 742 135, 748 147 C 762 147, 765 165, 755 180 C 750 190, 710 192, 705 182 Z" fill="url(#brainGrad)" stroke="#BE185D" stroke-width="2.5"/>
+
+        <!-- Brain Folds -->
+        <path d="M714 158 C 722 152, 730 162, 738 155 M710 170 C 720 165, 725 175, 735 170 M730 148 C 735 156, 745 152, 750 162 M738 168 C 744 163, 748 174, 754 172" fill="none" stroke="#9D174D" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Highlights on Brain -->
+        <path d="M715 148 C 720 144, 730 143, 735 146" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.7" stroke-linecap="round"/>
+
+        <!-- Cool Sunglasses on Brain -->
+        <g id="brainSunglasses">
+          <!-- Frame -->
+          <rect x="714" y="156" width="16" height="10" rx="2" fill="#0F172A"/>
+          <rect x="733" y="156" width="16" height="10" rx="2" fill="#0F172A"/>
+          <!-- Bridge -->
+          <line x1="730" y1="159" x2="733" y2="159" stroke="#0F172A" stroke-width="2"/>
+          <!-- Lens Sheen -->
+          <line x1="716" y1="158" x2="724" y2="164" stroke="#38BDF8" stroke-width="1.5"/>
+          <line x1="735" y1="158" x2="743" y2="164" stroke="#38BDF8" stroke-width="1.5"/>
+        </g>
+
+        <!-- Cute Happy Smile on Brain -->
+        <path d="M725 172 Q 731 177 737 172" fill="none" stroke="#881337" stroke-width="2" stroke-linecap="round"/>
+        <!-- Cute Brain Arm waving happily -->
+        <path d="M752 165 Q 766 158 764 148" fill="none" stroke="#F472B6" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="764" cy="147" r="3" fill="#F472B6"/>
+        
+        <!-- Sparkles around brain -->
+        <path d="M768 138 L772 138 M770 136 L770 140" stroke="#FBCFE8" stroke-width="1.5"/>
+        <path d="M698 145 L702 145 M700 143 L700 147" stroke="#FBCFE8" stroke-width="1.5"/>
+      </g>
+    </g>
+
+    <!-- Torso (Jacket) -->
+    <g id="torso">
+      <path d="M740 215 L780 210 L790 295 L745 295 Z" fill="url(#jacketGrad)" stroke="#C2410C" stroke-width="2"/>
+      <path d="M765 212 L765 295" stroke="#06B6D4" stroke-width="2.5"/>
+      <path d="M750 213 L780 210 L785 225 L745 228 Z" fill="#0284C7"/>
+      <path d="M748 215 L755 280 M772 212 L778 280" stroke="#374151" stroke-width="4.5"/>
+      <path d="M748 215 L755 280 M772 212 L778 280" stroke="#F97316" stroke-width="1.5"/>
+    </g>
+
+    <!-- Head & Face (Looking up/ahead) -->
+    <g id="head">
+      <rect x="756" y="198" width="16" height="16" fill="#FDBA74"/>
+      <path d="M750 172 C 750 160, 782 160, 782 176 C 782 192, 775 202, 758 200 Z" fill="#FDBA74" stroke="#EA580C" stroke-width="1.5"/>
+      <path d="M780 180 Q 787 182 780 187" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="754" cy="182" r="3.5" fill="#FDBA74" stroke="#EA580C" stroke-width="1"/>
+      <ellipse cx="772" cy="176" rx="3" ry="4" fill="#0F172A"/>
+      <circle cx="773" cy="175" r="1" fill="#FFFFFF"/>
+      <path d="M768 170 Q 773 167 777 170" fill="none" stroke="#451A03" stroke-width="2" stroke-linecap="round"/>
+      <path d="M770 190 Q 777 194 782 188" fill="none" stroke="#9A3412" stroke-width="2" stroke-linecap="round"/>
+
+      <path d="M746 174 C 744 152, 786 150, 786 172 Z" fill="#06B6D4" stroke="#0891B2" stroke-width="2"/>
+      <path d="M744 172 L788 170 L787 178 L744 180 Z" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+      <circle cx="765" cy="148" r="7" fill="#F8FAFC" stroke="#06B6D4" stroke-width="1.5"/>
+    </g>
+
+    <!-- Left Arm & Climbing Ice Axe -->
+    <g id="leftArmAndAxe">
+      <path d="M742 220 L715 250 L728 260 L750 230 Z" fill="#EA580C" stroke="#9A3412" stroke-width="1.5"/>
+      <path d="M715 250 L685 280 L696 290 L725 260 Z" fill="#D97706" stroke="#78350F" stroke-width="1.5"/>
+      <line x1="670" y1="240" x2="710" y2="335" stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M655 242 C 665 235, 680 235, 688 245 L668 248 Z" fill="#38BDF8" stroke="#0284C7" stroke-width="1.5"/>
+      <path d="M708 330 L712 342 L714 330 Z" fill="#38BDF8"/>
+    </g>
+
+    <!-- Right Arm -->
+    <g id="rightArm">
+      <path d="M778 220 L810 250 L800 262 L770 232 Z" fill="#F97316" stroke="#C2410C" stroke-width="1.5"/>
+      <circle cx="812" cy="256" r="8" fill="#D97706" stroke="#78350F" stroke-width="1.5"/>
+    </g>
+  </g>
+
+  <!-- ==================== BRANDING / TEXT SECTION (LEFT SIDE) ==================== -->
+  <g transform="translate(80, 0)">
+    <g transform="translate(0, 135)">
+      <rect width="265" height="34" rx="17" fill="#1E1B4B" stroke="#EC4899" stroke-width="1.5" opacity="0.9"/>
+      <circle cx="20" cy="17" r="5" fill="#EC4899"/>
+      <text x="34" y="22" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" fill="#F472B6" letter-spacing="1.5">PERSISTENCE &amp; RECALL</text>
+    </g>
+
+    <text x="0" y="245" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="800" fill="url(#titleGradMemory)" letter-spacing="-1.5">MemoryHooker</text>
+
+    <path d="M0 265 L380 265" stroke="#EC4899" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+    <path d="M380 265 L460 265" stroke="#38BDF8" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+
+    <text x="0" y="315" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="500" fill="#CBD5E1" letter-spacing="0.5">carries your memories uphill</text>
+
+    <text x="0" y="355" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="400" fill="#94A3B8">
+      <tspan x="0" dy="0">Seamlessly preserves state, session provenance &amp; long-term</tspan>
+      <tspan x="0" dy="22">context across agent executions without missing a step.</tspan>
+    </text>
+
+    <g transform="translate(0, 425)">
       <g transform="translate(0, 0)">
-        <rect width="180" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
-        <circle cx="20" cy="19" r="4" fill="#38bdf8"/>
-        <text x="35" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#e2e8f0">Markdown Recall</text>
+        <rect width="160" height="36" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+        <text x="16" y="23" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="600" fill="#38BDF8">State Persistence</text>
       </g>
-      <!-- Pill 2 -->
-      <g transform="translate(195, 0)">
-        <rect width="180" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
-        <circle cx="20" cy="19" r="4" fill="#c084fc"/>
-        <text x="35" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#e2e8f0">Zero-Latency Hook</text>
+      <g transform="translate(172, 0)">
+        <rect width="165" height="36" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+        <text x="16" y="23" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="600" fill="#F472B6">Context Recall</text>
       </g>
-      <!-- Pill 3 -->
-      <g transform="translate(390, 0)">
-        <rect width="170" height="38" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
-        <circle cx="20" cy="19" r="4" fill="#2dd4bf"/>
-        <text x="35" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="500" fill="#e2e8f0">100% Local First</text>
+      <g transform="translate(0, 48)">
+        <rect width="175" height="36" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+        <text x="16" y="23" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="600" fill="#F59E0B">Provenance Audit</text>
       </g>
     </g>
   </g>
 
-  <!-- Right Graphic Motif: Memory Nodes & Neural Layer Recall Structure -->
-  <g transform="translate(740, 110)">
-    <!-- Outer Decorative Orbit Circles -->
-    <circle cx="220" cy="200" r="190" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.15" stroke-dasharray="6 6"/>
-    <circle cx="220" cy="200" r="140" fill="none" stroke="#c084fc" stroke-width="1" stroke-opacity="0.25"/>
-
-    <!-- Neural Recall / Layer Connections -->
-    <!-- Layer Lines -->
-    <path d="M 100 120 L 220 70 L 340 120 L 340 280 L 220 330 L 100 280 Z" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.3"/>
-
-    <!-- Central Memory Core Diamond -->
-    <polygon points="220,130 290,200 220,270 150,200" fill="url(#glow-teal)" opacity="0.25"/>
-    <polygon points="220,130 290,200 220,270 150,200" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-opacity="0.8"/>
-
-    <polygon points="220,160 255,200 220,240 185,200" fill="url(#accent-purple)" opacity="0.4"/>
-    <polygon points="220,160 255,200 220,240 185,200" fill="none" stroke="#c084fc" stroke-width="1.5"/>
-
-    <!-- Memory Core Center Sphere -->
-    <circle cx="220" cy="200" r="14" fill="#38bdf8" filter="url(#glow-cyan)"/>
-    <circle cx="220" cy="200" r="7" fill="#ffffff"/>
-
-    <!-- Network Memory Nodes -->
-    <!-- Node Top -->
-    <line x1="220" y1="70" x2="220" y2="130" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3"/>
-    <circle cx="220" cy="70" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-    <circle cx="220" cy="70" r="3" fill="#38bdf8"/>
-
-    <!-- Node Right Top -->
-    <line x1="340" y1="120" x2="290" y2="200" stroke="#38bdf8" stroke-width="1.5"/>
-    <circle cx="340" cy="120" r="10" fill="#1e293b" stroke="#c084fc" stroke-width="2"/>
-    <circle cx="340" cy="120" r="4" fill="#c084fc"/>
-
-    <!-- Node Right Bottom -->
-    <line x1="340" y1="280" x2="290" y2="200" stroke="#38bdf8" stroke-width="1.5"/>
-    <circle cx="340" cy="280" r="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-    <circle cx="340" cy="280" r="3" fill="#38bdf8"/>
-
-    <!-- Node Bottom -->
-    <line x1="220" y1="330" x2="220" y2="270" stroke="#2dd4bf" stroke-width="1.5" stroke-dasharray="3 3"/>
-    <circle cx="220" cy="330" r="10" fill="#1e293b" stroke="#2dd4bf" stroke-width="2"/>
-    <circle cx="220" cy="330" r="4" fill="#2dd4bf"/>
-
-    <!-- Node Left Bottom -->
-    <line x1="100" y1="280" x2="150" y2="200" stroke="#38bdf8" stroke-width="1.5"/>
-    <circle cx="100" cy="280" r="8" fill="#1e293b" stroke="#c084fc" stroke-width="2"/>
-    <circle cx="100" cy="280" r="3" fill="#c084fc"/>
-
-    <!-- Node Left Top -->
-    <line x1="100" y1="120" x2="150" y2="200" stroke="#38bdf8" stroke-width="1.5"/>
-    <circle cx="100" cy="120" r="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-    <circle cx="100" cy="120" r="4" fill="#38bdf8"/>
-
-    <!-- Pulse Signal Rings / Wave Recall Lines -->
-    <path d="M 120 180 Q 220 140 320 180" fill="none" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6"/>
-    <path d="M 140 220 Q 220 260 300 220" fill="none" stroke="#c084fc" stroke-width="2" stroke-opacity="0.6"/>
-  </g>
+  <rect x="0" y="624" width="1200" height="6" fill="#EC4899" opacity="0.8"/>
 </svg>
