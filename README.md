@@ -2,6 +2,9 @@
 
 # MemoryHooker
 
+> **Contributing:** development happens in the private twin `memoryhooker-provenance`; this repository carries the curated result. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
 MemoryHooker connects local memory sources to lifecycle hooks exposed by coding
 agents. It can emit a reminder to search memory, add a short clue, or perform a
 local search and return selected hits. The package makes no network requests
