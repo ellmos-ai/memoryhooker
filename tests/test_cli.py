@@ -270,3 +270,46 @@ def test_hook_run_plain_format_prints_bare_message(tmp_path, capsys, monkeypatch
     out = capsys.readouterr().out
     assert "MemoryHooker" in out
     assert not out.strip().startswith("{")
+
+
+def test_record_search_zaehlt_in_die_sitzung_aus_stdin(tmp_path, monkeypatch):
+    """Regression: Auch ``record-search`` liest die Sitzungskennung aus stdin.
+
+    Der Befehl laeuft als PostToolUse-Hook -- dort steht die Kennung
+    ausschliesslich im stdin-JSON, weil Claude Code in Hook-Kommandos keine
+    Variablen ersetzt. Ohne das Lesen landet JEDER Suchzaehler in
+    ``session-default.json``, waehrend die echte Sitzung bei 0 bleibt.
+    Getroffen wird damit genau die Funktion, fuer die der Zaehler existiert:
+    ``search_after_n_searches`` wird nie erreicht, das Modul blendet nie
+    Treffer ein, sondern hoechstens den generischen SessionStart-Anstoss.
+
+    Gemessen auf ASUS-GEI am 2026-08-01: drei Aufrufe mit Kennung im Payload
+    erhoehten session-default.json auf 3, die Sitzungsdatei blieb bei 0.
+    """
+    import io
+    import json as _json
+
+    state_dir = tmp_path / "state"
+    for _ in range(3):
+        monkeypatch.setattr(
+            "sys.stdin", io.StringIO(_json.dumps({"session_id": "S1"}))
+        )
+        assert main(["--state-dir", str(state_dir), "record-search"]) == 0
+
+    geschrieben = sorted(p.name for p in state_dir.iterdir())
+    assert geschrieben == ["session-S1.json"], geschrieben
+    zustand = _json.loads((state_dir / "session-S1.json").read_text(encoding="utf-8"))
+    assert zustand["search_count"] == 3
+
+
+def test_record_search_session_id_option_behaelt_vorrang(tmp_path, monkeypatch):
+    """Manuelle Aufrufe und Tests muessen weiterhin steuern koennen."""
+    import io
+    import json as _json
+
+    state_dir = tmp_path / "state"
+    monkeypatch.setattr("sys.stdin", io.StringIO(_json.dumps({"session_id": "AUS_STDIN"})))
+    assert main([
+        "--state-dir", str(state_dir), "--session-id", "EXPLIZIT", "record-search",
+    ]) == 0
+    assert [p.name for p in state_dir.iterdir()] == ["session-EXPLIZIT.json"]

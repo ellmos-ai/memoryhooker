@@ -127,7 +127,22 @@ def _cmd_session_start(args) -> int:
 
 
 def _cmd_record_search(args) -> int:
-    state_path = _state_path(args)
+    # Dieselbe Begruendung wie in _cmd_hook_run, dritter Aufrufpfad: Auch
+    # dieser Befehl laeuft als Hook (PostToolUse), und auch hier steht die
+    # Sitzungskennung ausschliesslich im stdin-JSON.
+    #
+    # Ohne das Lesen landet JEDER Suchzaehler in session-default.json,
+    # waehrend die echte Sitzung bei 0 bleibt. Die Folge trifft genau die
+    # Funktion, fuer die der Zaehler existiert: `search_after_n_searches`
+    # wird nie erreicht, das Modul blendet nie Treffer ein, sondern hoechstens
+    # den generischen SessionStart-Anstoss -- und wirkt dadurch beliebig.
+    # Gemessen auf ASUS-GEI am 2026-08-01: drei record-search-Aufrufe mit
+    # Sitzungskennung im Payload erhoehten session-default.json auf 3,
+    # waehrend die Datei der Sitzung bei search_count 0 blieb.
+    payload = _read_stdin_json()
+    state_path = state_path_for_session(
+        args.session_id or _extract_session_id(payload), args.state_dir
+    )
     state = SessionState.load(state_path)
     state.record_search()
     state.save(state_path)
@@ -203,9 +218,19 @@ def _cmd_hook_run(args) -> int:
 
 
 def _read_stdin_json() -> dict:
-    if sys.stdin.isatty():
+    # isatty() ist kein verlaesslicher Indikator, ob stdin sicher lesbar ist
+    # (z. B. faengt pytest-Capture stdin durch ein Objekt ab, das weder ein
+    # TTY ist noch echtes Lesen erlaubt und stattdessen OSError wirft).
+    # Ein Hook darf dadurch niemals crashen -- deshalb defensiv abfangen.
+    # Die Haertung stand bereits im Schwestermodul WorkflowHooker und war
+    # hier nie nachgezogen; sichtbar wurde das erst, als record-search
+    # ebenfalls anfing, stdin zu lesen.
+    try:
+        if sys.stdin.isatty():
+            return {}
+        raw = sys.stdin.read()
+    except (OSError, ValueError):
         return {}
-    raw = sys.stdin.read()
     if not raw.strip():
         return {}
     try:
