@@ -88,6 +88,8 @@ def _build_one(kind: str, options: dict) -> MemoryBackend:
             options.get("data_dir") or path,
             db_path=options.get("db_path"),
             user_db_path=options.get("user_db_path"),
+            include_types=options.get("include_types"),
+            exclude_tags=options.get("exclude_tags"),
         )
     if kind == "usmc":
         return UsmcBackend(options.get("db_path") or path)

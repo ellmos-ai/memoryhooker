@@ -26,6 +26,20 @@ from ..protocol import Hit
 
 _SNIPPET_LIMIT = 240
 
+# Gardener trennt Gedaechtnis von Material: recall() dort schoepft nur aus
+# memory/lesson/session, find() aus allem. Wer wie hier direkt an die DB geht,
+# muss diese Trennung selbst ziehen -- sonst konkurriert Rohmaterial mit dem
+# kuratierten Gedaechtnis um die wenigen Injektionsplaetze.
+#
+# Ausgeschlossen wird NICHT der Typ `observed` als Ganzes: dort liegen auch
+# Skills, Regeldateien und die Lesson-Tabellen anderer Werkzeuge, und die sind
+# als Hinweis wertvoll. Ausgeschlossen werden gezielt Gespraechstranskripte --
+# auf ASUS-GEI am 2026-08-01 gemessen 11.835 von 14.251 observed-Eintraegen
+# (83%). Ein Transkript ist ein abgeschnittener Gespraechsfetzen aus einer
+# Altsitzung; als eingeblendeter Hinweis ist er fast immer Rauschen.
+DEFAULT_INCLUDE_TYPES = ("memory", "lesson", "session", "knowledge", "observed")
+DEFAULT_EXCLUDE_TAGS = ("agent_transcript",)
+
 
 def _expand(value: Path | str) -> Path:
     """``~`` und ``$VARS`` aufloesen -- Konfigdateien schreiben Pfade so."""
@@ -46,7 +60,14 @@ class GardenerBackend:
         data_dir: Path | str | None = None,
         db_path: Path | str | None = None,
         user_db_path: Path | str | None = None,
+        include_types: tuple[str, ...] | list[str] | None = None,
+        exclude_tags: tuple[str, ...] | list[str] | None = None,
     ):
+        # Beide Filter sind bewusst ueberschreibbar: Wer die Transkripte doch
+        # durchsuchen will, setzt `exclude_tags = []` in der Konfiguration.
+        self.include_types = tuple(include_types) if include_types is not None else DEFAULT_INCLUDE_TYPES
+        self.exclude_tags = tuple(exclude_tags) if exclude_tags is not None else DEFAULT_EXCLUDE_TAGS
+
         system = _expand(db_path) if db_path else None
         user = _expand(user_db_path) if user_db_path else None
 
@@ -78,7 +99,64 @@ class GardenerBackend:
             hits.extend(self._search_db(db_path, source_label, query, limit))
 
         hits.sort(key=lambda h: h.rank, reverse=True)
-        return hits[:limit]
+        return self._entdoppeln(hits)[:limit]
+
+    @staticmethod
+    def _sprachneutraler_name(source: str) -> str:
+        """Quellname ohne Sprachkennung, als Dedup-Schluessel.
+
+        ``SKILL.md``, ``SKILL.fr.md`` und ``README_de.md`` sind Fassungen
+        DESSELBEN Inhalts. Ihre Texte unterscheiden sich, der Text-Vergleich
+        greift also nicht -- als Hinweis sind sie dennoch austauschbar, und
+        wer sie alle einblendet, verschenkt Plaetze. Gemessen 2026-08-01:
+        drei von neun Treffern einer Stichprobe waren Uebersetzungen bereits
+        gelisteter Eintraege.
+        """
+        teile = source.rsplit("/", 2)
+        name = teile[-1]
+        stamm = name[: -len(".md")] if name.endswith(".md") else name
+        # Sprachkennung als Endung (SKILL.fr) oder mit Unterstrich (README_de)
+        for trenner in (".", "_"):
+            kopf, sep, schwanz = stamm.rpartition(trenner)
+            if sep and 2 <= len(schwanz) <= 3 and schwanz.isalpha() and schwanz.islower():
+                stamm = kopf
+                break
+        # Nur der UNMITTELBARE Elternordner zaehlt, nicht der ganze Pfad:
+        # Dieselbe Einheit liegt oft an zwei Stellen -- ein Skill sowohl in
+        # der Bibliothek als auch deployt, oder derselbe Skill unter zwei
+        # Kategorien (gemessen 2026-08-01: `surface-after-care` liegt unter
+        # `dev/` UND unter `infrastructure/`). Der Elternordner ist bei
+        # solchen Ablagen die tragende Identitaet, der Pfad davor nicht.
+        elternordner = teile[-2] if len(teile) > 1 else ""
+        return f"{elternordner}/{stamm}".lower()
+
+    @classmethod
+    def _entdoppeln(cls, hits: list[Hit]) -> list[Hit]:
+        """Denselben Inhalt nur einmal -- der bestplatzierte gewinnt.
+
+        Zwei Wege, wie derselbe Hinweis mehrfach auftaucht:
+        - **Gleicher Text:** dieselbe Datei ueber zwei observe-Quellen
+          indexiert, oder eine Datei, die an zwei Orten liegt.
+        - **Gleicher Inhalt, andere Sprache:** ``SKILL.md`` neben
+          ``SKILL.fr.md`` (siehe ``_sprachneutraler_name``).
+
+        Ohne diesen Schritt belegen die wenigen Injektionsplaetze mehrfach
+        denselben Hinweis.
+        """
+        gesehen_text: set[str] = set()
+        gesehen_quelle: set[str] = set()
+        eindeutig: list[Hit] = []
+        for hit in hits:
+            text_schluessel = " ".join((hit.text or "").split()).lower()
+            quell_schluessel = cls._sprachneutraler_name(hit.source or "")
+            if text_schluessel and text_schluessel in gesehen_text:
+                continue
+            if quell_schluessel and quell_schluessel in gesehen_quelle:
+                continue
+            gesehen_text.add(text_schluessel)
+            gesehen_quelle.add(quell_schluessel)
+            eindeutig.append(hit)
+        return eindeutig
 
     def _search_db(
         self, db_path: Path, source_label: str, query: str, limit: int
@@ -86,21 +164,37 @@ class GardenerBackend:
         if not db_path.exists():
             return []
 
+        bedingungen = ["everything_fts MATCH ?"]
+        parameter: list[object] = [query]
+        if self.include_types:
+            platzhalter = ", ".join("?" for _ in self.include_types)
+            bedingungen.append(f"e.type IN ({platzhalter})")
+            parameter.extend(self.include_types)
+        for tag in self.exclude_tags:
+            bedingungen.append("COALESCE(e.tags, '') NOT LIKE ?")
+            parameter.append(f"%{tag}%")
+
+        # Mehr Zeilen holen als gebraucht: Nach dem Entdoppeln in search()
+        # sollen noch `limit` Treffer uebrig bleiben. Der Faktor ist eine
+        # Reserve, keine Garantie -- bei sehr vielen Doubletten kommen
+        # entsprechend weniger Treffer zurueck, und das ist richtig so.
+        parameter.append(max(limit * 4, limit))
+
         try:
             conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
             conn.row_factory = sqlite3.Row
             try:
                 rows = conn.execute(
-                    """
+                    f"""
                     SELECT e.name AS name, e.content AS content, e.type AS type,
                            bm25(everything_fts) AS score
                     FROM everything_fts
                     JOIN everything e ON e.id = everything_fts.rowid
-                    WHERE everything_fts MATCH ?
+                    WHERE {' AND '.join(bedingungen)}
                     ORDER BY score
                     LIMIT ?
                     """,
-                    (query, limit),
+                    parameter,
                 ).fetchall()
             finally:
                 conn.close()
