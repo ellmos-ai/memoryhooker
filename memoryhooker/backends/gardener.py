@@ -90,16 +90,53 @@ class GardenerBackend:
     def available(self) -> bool:
         return self.system_db.exists() or self.user_db.exists()
 
+    @staticmethod
+    def _oder_query(query: str) -> str | None:
+        """Mehrwort-Query als FTS5-ODER-Verknuepfung, sonst ``None``.
+
+        FTS5 verknuepft die Woerter einer MATCH-Query mit UND. Ein echter
+        Nutzer-Prompt ist aber ein ganzer Satz -- "wie setze ich einen lock
+        richtig?" verlangt dann ein Dokument, das ALLE diese Woerter enthaelt,
+        Fragezeichen und Fuellwoerter eingeschlossen. Praktisch findet das nie
+        etwas: Gemessen am 2026-08-01 lieferte genau dieser Prompt aus dem
+        Gardener-Backend null Treffer, waehrend das schwaechere files-Backend
+        die Injektion allein bestritt.
+
+        Gardener selbst loest das seit 2026-07-30 mit demselben Verfahren
+        (``_build_fts_or_query``); dieses Backend geht an Gardeners Suche
+        vorbei direkt an die DB und muss es deshalb selbst mitbringen.
+        Explizite Operatoren und Phrasen bleiben unangetastet -- wer sie
+        schreibt, meint sie.
+        """
+        if '"' in query or any(
+            op in query.upper().split() for op in ("OR", "AND", "NOT", "NEAR")
+        ):
+            return None
+        worte = [w.strip() for w in query.split() if w.strip()]
+        if len(worte) <= 1:
+            return None
+        return " OR ".join(f'"{w}"' for w in worte)
+
     def search(self, query: str, limit: int = 5) -> list[Hit]:
+        hits = self._sammeln(query, limit)
+        if not hits:
+            # Erst die strenge UND-Suche, dann die ODER-Variante: Ein Treffer,
+            # der alle Begriffe enthaelt, ist der bessere -- die Lockerung
+            # greift nur, wenn es ihn nicht gibt.
+            oder = self._oder_query(query)
+            if oder:
+                hits = self._sammeln(oder, limit)
+        hits.sort(key=lambda h: h.rank, reverse=True)
+        return self._entdoppeln(hits)[:limit]
+
+    def _sammeln(self, match_query: str, limit: int) -> list[Hit]:
         hits: list[Hit] = []
         for db_path, source_label in (
             (self.user_db, "gardener:user"),
             (self.system_db, "gardener:system"),
         ):
-            hits.extend(self._search_db(db_path, source_label, query, limit))
-
-        hits.sort(key=lambda h: h.rank, reverse=True)
-        return self._entdoppeln(hits)[:limit]
+            hits.extend(self._search_db(db_path, source_label, match_query, limit))
+        return hits
 
     @staticmethod
     def _sprachneutraler_name(source: str) -> str:

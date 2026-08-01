@@ -289,3 +289,38 @@ def test_verschiedene_dateien_werden_nicht_verwechselt(tmp_path: Path):
     ])
     hits = GardenerBackend(tmp_path).search("Lock", 5)
     assert len(hits) == 2, [h.source for h in hits]
+
+
+def test_ganzer_satz_findet_trotz_fts_und_verknuepfung(tmp_path: Path):
+    """Regression: Ein echter Nutzer-Prompt ist ein Satz, keine Stichwortliste.
+
+    FTS5 verknuepft die Woerter einer MATCH-Query mit UND -- ein ganzer Satz
+    verlangt damit ein Dokument, das ALLE Woerter enthaelt, Fuellwoerter und
+    Fragezeichen eingeschlossen. Gemessen am 2026-08-01: der Prompt "wie setze
+    ich einen lock richtig?" lieferte aus diesem Backend null Treffer, sodass
+    allein das schwaechere files-Backend die Injektion bestritt -- mit einem
+    mathematischen Beweistext als drittem Treffer.
+    """
+    _make_db_mit_tags(tmp_path / "user.db", [
+        ("memory/lock-regel", "Lock vor Arbeitsbeginn setzen", "memory", "regeln"),
+    ])
+    backend = GardenerBackend(tmp_path)
+
+    assert backend.search("Lock setzen", 3), "Stichwort-Query fand schon vorher"
+    treffer = backend.search("wie setze ich einen Lock richtig?", 3)
+    assert treffer, "ganzer Satz muss ebenfalls finden"
+    assert "lock-regel" in treffer[0].source
+
+
+def test_explizite_operatoren_bleiben_unangetastet(tmp_path: Path):
+    """Wer FTS-Operatoren oder Phrasen schreibt, meint sie -- keine Lockerung."""
+    _make_db_mit_tags(tmp_path / "user.db", [
+        ("memory/a", "Lock setzen vor Arbeitsbeginn", "memory", "regeln"),
+        ("memory/b", "Backup nachts einspielen", "memory", "regeln"),
+    ])
+    backend = GardenerBackend(tmp_path)
+
+    # Phrase, die so nicht vorkommt: darf NICHT auf ODER gelockert werden.
+    assert backend.search('"Lock Backup"', 3) == []
+    # Explizites UND ebenfalls nicht.
+    assert backend.search("Lock AND Backup", 3) == []
