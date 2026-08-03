@@ -4,6 +4,13 @@ All notable public changes are documented in this file.
 
 ## Unreleased
 
+### Documentation & Discoverability
+
+- Added ecosystem (`ellmos-ai`) and umbrella (`open-bricks`) Shields.io badges to `README.md` and `README_de.md`.
+- Added GFM Callout boxes and explicit `llms.txt` navigation links for AI agent indexing.
+- Synchronized header banner and language toggles across English and German documentation.
+- Updated `llms.txt` verification timestamp to 2026-08-03.
+
 ### Fixed
 
 - Search now targets curated memory instead of raw material. The query ran

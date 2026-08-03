@@ -1,4 +1,15 @@
+![MemoryHooker](docs/assets/banner.svg)
+
 # MemoryHooker
+
+[![ellmos-ai](https://img.shields.io/badge/ecosystem-ellmos--ai-blue.svg)](https://github.com/ellmos-ai)
+[![open-bricks](https://img.shields.io/badge/umbrella-open--bricks-indigo.svg)](https://github.com/open-bricks)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Language: English](https://img.shields.io/badge/Language-English-gb.svg)](README.md)
+
+> [!NOTE]
+> **KI- & Agenten-Indexierung:** Dieses Repository bietet eine maschinenlesbare [`llms.txt`](llms.txt)-Zusammenfassung für KI-Agenten, LLM-Werkzeuge und Lifecycle-Hooks.
 
 MemoryHooker verbindet lokale Wissensquellen mit Lebenszyklus-Hooks von
 Coding-Agenten. Das Modul kann an eine Suche erinnern, einen kurzen Hinweis
