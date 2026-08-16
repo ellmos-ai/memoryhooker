@@ -29,7 +29,7 @@ from .config import Config, load_config
 from .modes import evaluate_prompt, session_start_message
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
-from .state import SessionState, default_state_dir, state_path_for_session
+from .state import SessionState, state_path_for_session
 
 # Kandidaten-Feldnamen fuer den Prompt-Text im UserPromptSubmit-stdin-JSON.
 # ACHTUNG (siehe ROADMAP.md, "Zu verifizieren, bevor gebaut wird"): der

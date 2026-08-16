@@ -14,7 +14,7 @@ Umbrella: open-bricks
 - memoryhooker/config.py: configuration schema and safe defaults.
 - memoryhooker/backends/: local read-only retrieval adapters.
 - memoryhooker/providers/: host-specific snippet generators.
-- tests/: automated behavior and provider-contract tests.
+- tests/: 139 automated behavior, metadata parity, and provider-contract tests.
 
 ## Safety properties
 

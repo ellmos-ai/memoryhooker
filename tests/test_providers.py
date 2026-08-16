@@ -1,9 +1,14 @@
+from pathlib import Path
+
+import pytest
+
 from memoryhooker.config import ProvidersConfig
 from memoryhooker.providers import PROVIDER_REGISTRY, resolve_provider
 from memoryhooker.providers.agy import AgyProvider
 from memoryhooker.providers.claude import ClaudeProvider
 from memoryhooker.providers.codex import CodexProvider
 from memoryhooker.providers.git import GitProvider
+from memoryhooker.providers.kimi import KimiProvider
 from memoryhooker.providers.manual import ManualProvider
 
 
@@ -67,13 +72,6 @@ def test_resolve_provider_picks_agy_when_ordered():
 
 def test_provider_registry_has_all_six():
     assert set(PROVIDER_REGISTRY) == {"claude", "codex", "agy", "kimi", "git", "manual"}
-
-
-from pathlib import Path
-
-import pytest
-
-from memoryhooker.providers.kimi import KimiProvider
 
 
 def test_kimi_provider_emits_only_userpromptsubmit_in_plain_format():

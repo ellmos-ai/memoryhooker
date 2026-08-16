@@ -4,6 +4,16 @@ All notable public changes are documented in this file.
 
 ## Unreleased
 
+## 0.3.1 - 2026-08-16
+
+### Maintenance & Technical Hygiene (Pfad A)
+
+- Standardized linting configuration: added `[tool.ruff]` and `[tool.ruff.lint]` configuration in `pyproject.toml` (`target-version = "py310"`, `line-length = 120`, `E402`/`E501` ignore).
+- Fixed unused import `default_state_dir` in `memoryhooker/cli.py`.
+- Reorganized module imports in `tests/test_providers.py`.
+- Added automated metadata & manifest contract test suite in `tests/test_metadata.py` (verifying version parity across `pyproject.toml`, `ellmos-module.v2.json`, and `__version__`, required fields, and module exports).
+- Synchronized documentation badges (139/139 passed).
+
 ## 0.3.0
 
 ### Added
