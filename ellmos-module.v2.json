@@ -4,7 +4,7 @@
   "display_name": "MemoryHooker",
   "category": "control",
   "kind": "library",
-  "status": "release-candidate",
+  "status": "staging",
   "version": "0.3.0",
   "visibility": "public",
   "provides": [
