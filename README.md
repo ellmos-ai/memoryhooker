@@ -23,14 +23,16 @@ and does not modify host configuration.
 
 - `files` backend for one or more Markdown directories.
 - Read-only `gardener` backend for compatible SQLite FTS5 databases.
+- Read-only `usmc` backend for USMC's curated facts, lessons, and working
+  memory (see "USMC backend" below).
 - Ordered backend chains that skip unavailable sources.
 - `remember`, `clue`, and `remember+search` modes.
 - Per-session injection limits and cooldowns.
 - Provider adapters for Claude Code, Codex CLI, Kimi Code CLI, Antigravity,
   Git, and manual execution.
 
-The `usmc` and `bach` backend names are reserved adapters. They currently fail
-open and return no hits; no direct database access is implemented for them.
+The `bach` backend name is a reserved adapter. It currently fails open and
+returns no hits; no direct database access is implemented for it.
 
 ## Requirements and installation
 
@@ -61,7 +63,10 @@ max_injections_per_session = 5
 cooldown_seconds = 60
 
 [backend]
-order = ["gardener", "files"]
+order = ["usmc", "gardener", "files"]
+
+[backend.usmc]
+db_path = "~/.usmc/usmc_memory.db"
 
 [backend.gardener]
 db_path = "~/.gardener/gardener.db"
@@ -76,6 +81,26 @@ order = ["claude", "codex", "kimi", "agy", "git", "manual"]
 
 The default mode is `remember`. A missing backend is not an error; the hook
 stays silent when no configured source is available.
+
+### USMC backend
+
+The `usmc` backend reads [USMC](https://pypi.org/project/usmc/)'s three
+curated tables directly and read-only: `usmc_facts`, `usmc_lessons`, and
+`usmc_working` (facts, lessons learned, and working-memory notes). It never
+imports or instantiates the `usmc` package -- `USMCClient.__init__` creates
+the database and its schema when the path does not yet exist, which is a
+write path this project's "read-only, never write" boundary rules out. The
+adapter opens the configured `db_path` (default `~/.usmc/usmc_memory.db`)
+with SQLite's `mode=ro` instead, the same contract the `gardener` backend
+already uses.
+
+`available()` requires all three tables to exist; a file that happens to
+exist but carries no USMC schema is treated the same as a missing file, not
+as an empty match. Ranking combines how many distinct query terms a row
+contains with USMC's own curation signal -- lesson severity, fact
+confidence, or working-memory priority -- so a `critical` lesson outranks an
+equally-matched `low` one, and curated facts/lessons outrank working-memory
+notes at the same match strength.
 
 ## Command line
 
@@ -92,9 +117,9 @@ host's settings. Review and merge the fragment manually.
 ## Data and security boundaries
 
 The file backend reads Markdown below explicitly configured roots. The
-Gardener adapter opens configured databases with SQLite read-only mode and
-never bundles database contents. Search hits and paths can be sensitive, so do
-not publish hook output or state files without review.
+Gardener and USMC adapters open configured databases with SQLite read-only
+mode and never bundle database contents. Search hits and paths can be
+sensitive, so do not publish hook output or state files without review.
 
 See [SECURITY.md](SECURITY.md) for private vulnerability reporting and
 [PROVENANCE.md](PROVENANCE.md) for source-history and BACH lineage notes.

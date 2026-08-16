@@ -2,7 +2,7 @@
 
 Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
 
-Last-checked: 2026-08-03
+Last-checked: 2026-08-16
 Ecosystem: ellmos-ai
 Umbrella: open-bricks
 
@@ -20,5 +20,5 @@ Umbrella: open-bricks
 
 - The package performs no network requests.
 - Host configuration is never edited automatically.
-- The Gardener backend opens configured databases read-only.
+- The Gardener and USMC backends open configured databases read-only.
 - Unavailable backends fail open and produce no hits.

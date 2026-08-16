@@ -4,6 +4,22 @@ All notable public changes are documented in this file.
 
 ## Unreleased
 
+## 0.3.0
+
+### Added
+
+- Added a read-only `usmc` backend that queries USMC's curated tables
+  directly -- `usmc_facts`, `usmc_lessons`, and `usmc_working` -- instead of
+  a generic full-text index over raw material. Ranking combines matched-term
+  count with USMC's own curation signal (lesson severity, fact confidence,
+  working-memory priority). The adapter never imports the `usmc` package: its
+  client constructor creates the database and schema on first use, a write
+  path this project's read-only boundary rules out, so the adapter opens the
+  configured path with SQLite `mode=ro` instead, mirroring the `gardener`
+  adapter's contract. Closes T-20260816-972236043 ("USMC-Lessons erreichen
+  keine Sitzung") for the `usmc` link of the chain; the live default
+  `~/.memoryhooker.toml` now lists `order = ["usmc", "gardener", "files"]`.
+
 ### Documentation & Discoverability
 
 - Added ecosystem (`ellmos-ai`) and umbrella (`open-bricks`) Shields.io badges to `README.md` and `README_de.md`.

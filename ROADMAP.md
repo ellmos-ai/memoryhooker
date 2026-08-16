@@ -3,8 +3,10 @@
 Future work is tracked against observable acceptance criteria:
 
 - Add contract tests for each supported host version.
-- Add a documented, read-only API before enabling the reserved BACH or USMC
-  adapters.
+- Add a documented, read-only API before enabling the reserved BACH adapter
+  (see `tests/test_backends_usmc.py` for the pattern the USMC adapter used:
+  a pinned schema snapshot plus a `mode=ro` sqlite3 connection, the same
+  contract the Gardener adapter already relies on).
 - Add structured diagnostics that redact local paths and memory content.
 - Add opt-in ranking diagnostics using synthetic data only.
 - Publish signed artifacts after the release repository and reporting channel
