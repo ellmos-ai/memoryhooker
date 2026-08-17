@@ -6,7 +6,7 @@
 [![open-bricks](https://img.shields.io/badge/umbrella-open--bricks-indigo.svg)](https://github.com/open-bricks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-139%20bestanden-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-156%20bestanden-brightgreen.svg)](tests/)
 [![llms.txt](https://img.shields.io/badge/llms.txt-verf%C3%BCgbar-0055ff?logo=markdown)](llms.txt)
 [![Language: English](https://img.shields.io/badge/Language-English-gb.svg)](README.md)
 
@@ -26,7 +26,12 @@ nutzt kein Netzwerk und verändert keine Host-Konfiguration.
   Memory (siehe Abschnitt "USMC-Backend" unten).
 - Geordnete Backend-Ketten, die nicht verfügbare Quellen überspringen.
 - Modi `remember`, `clue` und `remember+search`.
-- Begrenzung und Cooldown je Sitzung.
+- Begrenzung und Cooldown je Sitzung, mit taeglicher TTL und manuellem
+  `clear`-Kommando zum Zuruecksetzen.
+- `diagnose "<prompt>"`: meldet Config-Quelle, Session-Cap/Cooldown und
+  Backend-Verfuegbarkeit/Treffer einzeln -- ohne State zu veraendern. Details
+  und bekannte Stolpersteine (`--config` vor dem Subcommand, fehlendes
+  `--config`) siehe [README.md](README.md), Abschnitt "Command line".
 - Provider für Claude Code, Codex CLI, Kimi Code CLI, Antigravity, Git und
   manuelle Ausführung.
 

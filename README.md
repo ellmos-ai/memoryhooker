@@ -6,7 +6,7 @@
 [![open-bricks](https://img.shields.io/badge/umbrella-open--bricks-indigo.svg)](https://github.com/open-bricks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-139%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-156%20passed-brightgreen.svg)](tests/)
 [![llms.txt](https://img.shields.io/badge/llms.txt-available-0055ff?logo=markdown)](llms.txt)
 [![Language: Deutsch](https://img.shields.io/badge/Language-Deutsch-de.svg)](README_de.md)
 
@@ -111,10 +111,43 @@ python -m memoryhooker --config memoryhooker.toml check "deployment checklist"
 python -m memoryhooker providers
 python -m memoryhooker install-snippet --provider codex
 python -m memoryhooker install-snippet --provider kimi
+python -m memoryhooker --config memoryhooker.toml diagnose "deployment checklist"
+python -m memoryhooker clear
 ```
 
 `install-snippet` prints a configuration fragment. It never writes to the
 host's settings. Review and merge the fragment manually.
+
+`diagnose` evaluates the same three gates as `check`/`hook-run` -- config
+source, session cap/cooldown, and per-backend availability/hit-count/top-rank
+-- but reports each one individually instead of collapsing them into a
+silent yes/no. It never writes to the state file and never counts against
+`max_injections_per_session`; it is a read-only probe.
+
+`clear` deletes the state file targeted by `--session-id`/`--state-dir`
+(the shared `session-default.json` by default). Use it when a session's
+`injections_count` is stuck at `max_injections_per_session` -- most commonly
+after repeated manual `check`/`hook-run` calls made without `--session-id`
+while debugging, since those all share the same default state file. The
+state file also resets on its own once its stored calendar day is stale, so
+`clear` is for an immediate reset; the automatic TTL is the long-running
+safety net.
+
+### Troubleshooting: a silent hook
+
+`check`/`hook-run` intentionally give no output when they have nothing to
+say -- a hook must never look like an error. That makes two mistakes look
+identical to "no hit" from the outside:
+
+- `--config`, `--session-id`, and `--state-dir` are **top-level** arguments.
+  They must precede the subcommand: `memoryhooker --config x.toml check
+  "..."`, not `memoryhooker check --config x.toml "..."` (argparse
+  subparser scoping).
+- A missing or non-existent `--config` file is not an error either -- it
+  silently loads library defaults (a `files` backend with no configured
+  roots), which never reaches a configured Gardener/USMC/BACH backend.
+
+Run `diagnose` with the same prompt and flags to see which of these it is.
 
 ## Data and security boundaries
 

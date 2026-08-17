@@ -4,7 +4,15 @@ from pathlib import Path
 from memoryhooker.cli import main
 
 
-def _write_config(tmp_path: Path, memories_dir: Path, *, active="remember", search_after_n_searches=0) -> Path:
+def _write_config(
+    tmp_path: Path,
+    memories_dir: Path,
+    *,
+    active="remember",
+    search_after_n_searches=0,
+    max_injections_per_session=5,
+    cooldown_seconds=60,
+) -> Path:
     config_path = tmp_path / "memoryhooker.toml"
     config_path.write_text(
         f"""
@@ -13,7 +21,8 @@ active = "{active}"
 search_after_n_searches = {search_after_n_searches}
 max_hits = 3
 min_rank = 0.1
-max_injections_per_session = 5
+max_injections_per_session = {max_injections_per_session}
+cooldown_seconds = {cooldown_seconds}
 
 [backend]
 kind = "files"
@@ -313,3 +322,159 @@ def test_record_search_session_id_option_behaelt_vorrang(tmp_path, monkeypatch):
         "--state-dir", str(state_dir), "--session-id", "EXPLIZIT", "record-search",
     ]) == 0
     assert [p.name for p in state_dir.iterdir()] == ["session-EXPLIZIT.json"]
+
+
+# ---------------------------------------------------------------------------
+# clear (Ticket T-20260816-132994550, Befund 1: manueller Reset der State-Datei)
+# ---------------------------------------------------------------------------
+
+
+def test_clear_deletes_existing_state_file(tmp_path, capsys):
+    state_dir = tmp_path / "state"
+    main(["--state-dir", str(state_dir), "record-search"])
+    assert (state_dir / "session-default.json").exists()
+
+    exit_code = main(["--state-dir", str(state_dir), "clear"])
+
+    assert exit_code == 0
+    assert not (state_dir / "session-default.json").exists()
+    assert "geloescht" in capsys.readouterr().out
+
+
+def test_clear_on_missing_state_file_is_a_no_op(tmp_path, capsys):
+    state_dir = tmp_path / "state"
+
+    exit_code = main(["--state-dir", str(state_dir), "clear"])
+
+    assert exit_code == 0
+    assert "Kein State vorhanden" in capsys.readouterr().out
+
+
+def test_clear_only_touches_the_targeted_session(tmp_path):
+    state_dir = tmp_path / "state"
+    main(["--state-dir", str(state_dir), "--session-id", "A", "record-search"])
+    main(["--state-dir", str(state_dir), "--session-id", "B", "record-search"])
+
+    main(["--state-dir", str(state_dir), "--session-id", "A", "clear"])
+
+    remaining = sorted(p.name for p in state_dir.iterdir())
+    assert remaining == ["session-B.json"], remaining
+
+
+def test_clear_unblocks_the_session_cap(tmp_path, capsys):
+    """Reproduziert Befund 1: eine erschoepfte session-default.json bleibt
+    ohne diesen Befehl fuer immer stumm."""
+    memories = tmp_path / "memories"
+    memories.mkdir()
+    (memories / "note.md").write_text("Inhalt", encoding="utf-8")
+    config_path = _write_config(
+        tmp_path,
+        memories,
+        active="remember",
+        search_after_n_searches=0,
+        cooldown_seconds=0,
+    )
+    state_dir = tmp_path / "state"
+    common = ["--config", str(config_path), "--state-dir", str(state_dir)]
+
+    # max_injections_per_session=5 (Default aus _write_config) ausschoepfen.
+    # cooldown_seconds=0, sonst blockiert bereits der zweite Aufruf ueber
+    # den Cooldown und der Cap wird nie wirklich erreicht.
+    for _ in range(5):
+        main(common + ["check", "prompt"])
+    capsys.readouterr()
+
+    exit_code = main(common + ["check", "sollte stumm bleiben"])
+    assert exit_code == 0
+    assert capsys.readouterr().out == "", "Cap muss vor dem Reset noch greifen"
+
+    main(["--state-dir", str(state_dir), "clear"])
+
+    exit_code = main(common + ["check", "nach clear wieder aktiv"])
+    assert exit_code == 0
+    assert "MemoryHooker" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# diagnose (Ticket T-20260816-132994550, Befund 2: Gate-fuer-Gate-Report)
+# ---------------------------------------------------------------------------
+
+
+def test_diagnose_reports_missing_config_and_stays_silent_on_state(tmp_path, capsys):
+    """Der dokumentierte Stolperstein selbst: ein fehlendes --config sieht
+    in check/hook-run identisch aus wie "kein Treffer" -- diagnose macht den
+    Unterschied sichtbar UND veraendert keinen State."""
+    state_dir = tmp_path / "state"
+
+    exit_code = main(["--state-dir", str(state_dir), "diagnose", "irgendein prompt"])
+
+    assert exit_code == 0
+    out = capsys.readouterr().out
+    assert "Config: keine" in out
+    assert not state_dir.exists(), "diagnose darf keinen State schreiben"
+
+
+def test_diagnose_reports_configured_path_and_backend_hit(tmp_path, capsys):
+    memories = tmp_path / "memories"
+    memories.mkdir()
+    (memories / "note.md").write_text("MemoryHooker Testnotiz", encoding="utf-8")
+    config_path = _write_config(tmp_path, memories, active="remember+search")
+    state_dir = tmp_path / "state"
+
+    exit_code = main(
+        ["--config", str(config_path), "--state-dir", str(state_dir), "diagnose", "Testnotiz"]
+    )
+
+    assert exit_code == 0
+    out = capsys.readouterr().out
+    assert str(config_path) in out
+    assert "Session-Cap: 0/5" in out
+    assert "FilesBackend: verfuegbar=True" in out
+    assert "wuerde einspielen" in out
+
+
+def test_diagnose_never_mutates_state_or_counts_as_injection(tmp_path, capsys):
+    """diagnose darf das Injektions-Budget selbst nicht verbrauchen."""
+    memories = tmp_path / "memories"
+    memories.mkdir()
+    (memories / "note.md").write_text("MemoryHooker Testnotiz", encoding="utf-8")
+    config_path = _write_config(tmp_path, memories, active="remember+search")
+    state_dir = tmp_path / "state"
+    common = ["--config", str(config_path), "--state-dir", str(state_dir)]
+
+    main(common + ["diagnose", "Testnotiz"])
+    main(common + ["diagnose", "Testnotiz"])
+    main(common + ["diagnose", "Testnotiz"])
+    capsys.readouterr()
+
+    # State-Datei entsteht erst gar nicht -- diagnose schreibt nie.
+    assert not state_dir.exists()
+
+    exit_code = main(common + ["check", "Testnotiz"])
+    assert exit_code == 0
+    assert "MemoryHooker" in capsys.readouterr().out
+
+
+def test_diagnose_shows_exhausted_cap_reason(tmp_path, capsys):
+    memories = tmp_path / "memories"
+    memories.mkdir()
+    (memories / "note.md").write_text("Inhalt", encoding="utf-8")
+    config_path = _write_config(
+        tmp_path,
+        memories,
+        active="remember",
+        search_after_n_searches=0,
+        cooldown_seconds=0,
+    )
+    state_dir = tmp_path / "state"
+    common = ["--config", str(config_path), "--state-dir", str(state_dir)]
+
+    for _ in range(5):
+        main(common + ["check", "prompt"])
+    capsys.readouterr()
+
+    main(common + ["diagnose", "prompt"])
+    out = capsys.readouterr().out
+    assert "Session-Cap: 5/5" in out
+    assert "ERSCHOEPFT" in out
+    assert "bleibt stumm (Session-Cap erschoepft)" in out

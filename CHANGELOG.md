@@ -4,6 +4,41 @@ All notable public changes are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- `diagnose` command: reports each of the three gates (config source, session
+  cap/cooldown, per-backend availability/hit-count/top-rank) individually for
+  a given prompt, without writing to any hook output and without mutating
+  session state or counting against the injection budget. Closes Befund 2 of
+  Ticket T-20260816-132994550: `check`/`hook-run` collapse the three gates
+  into an opaque yes/no by design (a hook with nothing to say must never look
+  like an error), which is correct for the hook path but made a missing
+  `--config` indistinguishable from "no hit" during debugging.
+- `clear` command: deletes the state file targeted by `--session-id`/
+  `--state-dir` (the shared `session-default.json` by default), giving
+  operators an explicit reset for a session cap that got stuck.
+
+### Fixed
+
+- `SessionState` now carries a `state_date` (calendar day) and resets on
+  `load()` when that day has passed or is missing entirely. Without this, a
+  state file with no session id in the hook payload -- most commonly manual
+  `check`/`hook-run` calls made while debugging -- accumulated forever;
+  `~/.memoryhooker/session-default.json` was found stuck at
+  `injections_count == max_injections_per_session` (Befund 1 of Ticket
+  T-20260816-132994550). A file predating this field (no `state_date` key)
+  resets on the very next `load()`, healing the exact stuck file the ticket
+  describes.
+
+### Documentation
+
+- Documented two debugging stumbling blocks from the acceptance round behind
+  Ticket T-20260816-132994550 in the CLI module docstring and README.md:
+  `--config`/`--session-id`/`--state-dir` are top-level argparse arguments
+  and must precede the subcommand; a missing `--config` silently loads
+  library defaults (`files` backend without roots) and never reaches a
+  configured Gardener/USMC/BACH backend.
+
 ## 0.3.1 - 2026-08-16
 
 ### Maintenance & Technical Hygiene (Pfad A)

@@ -1,5 +1,6 @@
+from memoryhooker.backends import ChainBackend
 from memoryhooker.config import ClueConfig, Config, ModeConfig
-from memoryhooker.modes import evaluate_prompt, session_start_message
+from memoryhooker.modes import diagnose_prompt, evaluate_prompt, session_start_message
 from memoryhooker.protocol import Hit
 from memoryhooker.state import SessionState
 
@@ -170,3 +171,82 @@ def test_unknown_mode_raises_value_error():
     state = SessionState()
     with pytest.raises(ValueError):
         evaluate_prompt("x", config, backend, state)
+
+
+# ---------------------------------------------------------------------------
+# diagnose_prompt (Ticket T-20260816-132994550, Befund 2)
+# ---------------------------------------------------------------------------
+
+
+def test_diagnose_never_mutates_the_passed_in_state():
+    config = Config(mode=ModeConfig(active="remember+search", cooldown_seconds=0))
+    backend = _StubBackend(hits=[Hit(text="treffer", source="a.md", rank=0.9)])
+    state = SessionState()
+
+    report = diagnose_prompt("suche", config, backend, state, now=0.0)
+
+    assert report.would_inject is not None
+    assert state.injections_count == 0
+    assert state.last_injection_ts is None
+
+
+def test_diagnose_session_cap_status_reflects_config_and_state():
+    config = Config(mode=ModeConfig(max_injections_per_session=2))
+    state = SessionState(injections_count=2)
+    backend = _StubBackend(available=False)
+
+    report = diagnose_prompt("x", config, backend, state, now=0.0)
+
+    assert report.session_cap.ok is False
+    assert report.session_cap.detail == "2/2"
+    assert report.would_inject is None
+
+
+def test_diagnose_cooldown_status_reflects_remaining_time():
+    config = Config(mode=ModeConfig(cooldown_seconds=60))
+    state = SessionState(last_injection_ts=0.0)
+    backend = _StubBackend(available=False)
+
+    blocked = diagnose_prompt("x", config, backend, state, now=10.0)
+    assert blocked.cooldown.ok is False
+    assert "50" in blocked.cooldown.detail
+
+    ready = diagnose_prompt("x", config, backend, state, now=61.0)
+    assert ready.cooldown.ok is True
+    assert ready.cooldown.detail == "bereit"
+
+
+def test_diagnose_reports_each_link_of_a_chain_backend():
+    unavailable = _StubBackend(available=False)
+    available = _StubBackend(hits=[Hit(text="treffer", source="a.md", rank=0.7)])
+    chain = ChainBackend([unavailable, available])
+    config = Config(mode=ModeConfig(active="remember+search"))
+    state = SessionState()
+
+    report = diagnose_prompt("suche", config, chain, state, now=0.0)
+
+    assert len(report.backends) == 2
+    assert report.backends[0].available is False
+    assert report.backends[0].hit_count == 0
+    assert report.backends[0].top_rank is None
+    assert report.backends[1].available is True
+    assert report.backends[1].hit_count == 1
+    assert report.backends[1].top_rank == 0.7
+
+
+def test_diagnose_survives_a_broken_backend():
+    class _Broken:
+        def available(self):
+            raise RuntimeError("kaputt")
+
+        def search(self, query, limit=5):
+            raise RuntimeError("kaputt")
+
+    config = Config(mode=ModeConfig(active="remember+search"))
+    state = SessionState()
+
+    report = diagnose_prompt("x", config, _Broken(), state, now=0.0)
+
+    assert report.backends[0].available is False
+    assert report.backends[0].hit_count == 0
+    assert report.would_inject is None

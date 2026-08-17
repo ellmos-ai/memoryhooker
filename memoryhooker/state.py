@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import asdict, dataclass
+import time
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
@@ -30,6 +31,12 @@ def state_path_for_session(session_id: str | None, state_dir: Path | None = None
     return directory / name
 
 
+def _today() -> str:
+    """Lokaler Kalendertag, ISO-Format (YYYY-MM-DD) -- die TTL-Einheit fuer
+    :meth:`SessionState.load`."""
+    return time.strftime("%Y-%m-%d")
+
+
 @dataclass
 class SessionState:
     injections_count: int = 0
@@ -40,6 +47,15 @@ class SessionState:
     # (empirisch gefangener Bug, siehe tests/test_modes.py).
     last_injection_ts: float | None = None
     session_start_shown: bool = False
+    # TTL fuer den Cap-Guard (Ticket T-20260816-132994550, Befund 1): ohne
+    # das blieb z. B. ``session-default.json`` -- der Zustand fuer JEDEN
+    # manuellen Aufruf ohne ``session_id`` im Hook-Payload und ohne
+    # ``--session-id``, etwa bei manuellem Testen/Debuggen -- dauerhaft am
+    # Cap haengen, weil es dafuer keinen Reset gab (gemessen auf ASUS-GEI
+    # 2026-08-16: injections_count=5=max, search_count=65). state_date haelt
+    # den Kalendertag der letzten Schreibung fest; load() erkennt sowohl
+    # einen neuen Tag als auch eine Alt-Datei aus der Zeit vor diesem Feld.
+    state_date: str = field(default_factory=_today)
 
     @classmethod
     def load(cls, path: Path) -> "SessionState":
@@ -49,6 +65,12 @@ class SessionState:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             return cls()
+        today = _today()
+        if "state_date" not in data or data.get("state_date") != today:
+            # Neuer Kalendertag ODER Alt-Datei ohne state_date-Feld (aus der
+            # Zeit vor diesem Fix) -- beides heisst: frisch anfangen statt
+            # den Cap-Guard auf ewig blockiert zu lassen.
+            return cls(state_date=today)
         known = {f: data[f] for f in cls.__dataclass_fields__ if f in data}
         return cls(**known)
 

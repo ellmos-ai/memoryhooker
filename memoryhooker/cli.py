@@ -12,9 +12,27 @@ Befehle:
   python -m memoryhooker providers              zeigt Provider-Fallback-Kette
   python -m memoryhooker install-snippet        druckt/schreibt einen
                                                  Provider-Hook-Snippet
+  python -m memoryhooker diagnose "<prompt>"    meldet Config/Session-Cap/
+                                                 Cooldown/Backend-Gates
+                                                 EINZELN -- rein diagnostisch,
+                                                 kein Hook-Output, kein
+                                                 State-Schreiben
+  python -m memoryhooker clear                  loescht die State-Datei der
+                                                 aktiven Sitzung (Default
+                                                 ohne --session-id: die
+                                                 geteilte session-default.json)
 
 Jeder Befehl gibt bei "nichts zu sagen" einfach keine Ausgabe UND Exit-Code 0
 -- ein Hook, der nichts einzuspielen hat, darf niemals wie ein Fehler wirken.
+
+ACHTUNG (Stolperstein, siehe Ticket T-20260816-132994550): --config,
+--session-id und --state-dir sind Top-Level-Argumente von argparse und
+MUESSEN VOR dem Subcommand stehen, z. B. ``memoryhooker --config x.toml
+check "..."`` -- NICHT ``memoryhooker check --config x.toml "..."``. Ohne
+--config laedt ``check``/``hook-run`` reine Library-Defaults (files-Backend
+ohne Roots) und erreicht ein konfiguriertes Gardener/USMC/BACH-Backend NIE;
+das sieht von aussen identisch aus wie "kein Treffer" -- ``diagnose`` macht
+diesen Unterschied sichtbar.
 """
 
 from __future__ import annotations
@@ -26,7 +44,7 @@ from pathlib import Path
 
 from .backends import build_backend
 from .config import Config, load_config
-from .modes import evaluate_prompt, session_start_message
+from .modes import diagnose_prompt, evaluate_prompt, session_start_message
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
 from .state import SessionState, state_path_for_session
@@ -86,6 +104,19 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_install.add_argument("--out", type=Path, default=None)
     p_install.set_defaults(func=_cmd_install_snippet)
+
+    p_diagnose = sub.add_parser(
+        "diagnose",
+        help="Config/Session-Cap/Cooldown/Backend-Gates einzeln melden (rein diagnostisch, kein Hook-Output)",
+    )
+    p_diagnose.add_argument("prompt")
+    p_diagnose.set_defaults(func=_cmd_diagnose)
+
+    p_clear = sub.add_parser(
+        "clear",
+        help="State-Datei der aktiven Sitzung loeschen (Cap-/Cooldown-Reset)",
+    )
+    p_clear.set_defaults(func=_cmd_clear)
 
     return parser
 
@@ -171,6 +202,64 @@ def _cmd_install_snippet(args) -> int:
         print(f"geschrieben nach {args.out} -- manuell in Config einmischen", file=sys.stderr)
     else:
         print(text)
+    return 0
+
+
+def _describe_config_source(args) -> str:
+    """Formatiert, welche Config-Datei geladen wurde -- oder eben nicht.
+
+    Macht genau den Stolperstein aus Ticket T-20260816-132994550 sichtbar:
+    ein fehlendes ``--config`` sieht in ``check``/``hook-run`` identisch aus
+    wie "kein Treffer", weil beides einfach still bleibt.
+    """
+    if args.config is None:
+        return "keine (Library-Defaults: files-Backend ohne Roots)"
+    if not Path(args.config).exists():
+        return f"{args.config} (DATEI NICHT GEFUNDEN -- Library-Defaults werden verwendet)"
+    return str(args.config)
+
+
+def _cmd_diagnose(args) -> int:
+    config, backend = _load(args)
+    state_path = _state_path(args)
+    state = SessionState.load(state_path)
+
+    report = diagnose_prompt(args.prompt, config, backend, state)
+
+    lines = [
+        f"Config: {_describe_config_source(args)}",
+        f"State-Datei: {state_path}",
+        f"Modus: {report.mode}",
+        f"Session-Cap: {report.session_cap.detail}"
+        f" ({'ok' if report.session_cap.ok else 'ERSCHOEPFT -- memoryhooker clear hilft'})",
+        f"Cooldown: {report.cooldown.detail}"
+        f" ({'ok' if report.cooldown.ok else 'BLOCKIERT'})",
+        "Backends:",
+    ]
+    for b in report.backends:
+        rank = f"{b.top_rank:.2f}" if b.top_rank is not None else "-"
+        lines.append(f"  {b.name}: verfuegbar={b.available}, Treffer={b.hit_count}, Top-Rank={rank}")
+
+    if report.would_inject:
+        lines.append(f"Ergebnis: wuerde einspielen -> {report.would_inject}")
+    elif not report.session_cap.ok:
+        lines.append("Ergebnis: bleibt stumm (Session-Cap erschoepft)")
+    elif not report.cooldown.ok:
+        lines.append("Ergebnis: bleibt stumm (Cooldown aktiv)")
+    else:
+        lines.append("Ergebnis: bleibt stumm (kein Backend verfuegbar oder kein Treffer ueber min_rank)")
+
+    print("\n".join(lines))
+    return 0
+
+
+def _cmd_clear(args) -> int:
+    state_path = _state_path(args)
+    if state_path.exists():
+        state_path.unlink()
+        print(f"State geloescht: {state_path}")
+    else:
+        print(f"Kein State vorhanden: {state_path}")
     return 0
 
 
