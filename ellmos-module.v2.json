@@ -35,5 +35,8 @@
     "type": "local-directory",
     "path": "."
   },
-  "adapters": []
+  "adapters": [],
+  "repo_aliases": [
+    "ellmos-ai/memoryhooker-provenance"
+  ]
 }
