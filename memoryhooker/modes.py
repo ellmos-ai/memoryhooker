@@ -15,6 +15,12 @@ import time
 from dataclasses import dataclass, replace
 
 from .config import Config
+from .output_policy import (
+    deterministic_hits,
+    sanitize_hits,
+    sanitize_message,
+    selection_digest,
+)
 from .protocol import Hit, MemoryBackend
 from .state import SessionState
 
@@ -67,7 +73,10 @@ def evaluate_prompt(
     ):
         return None
 
-    if config.mode.active == "remember":
+    selected: list[Hit] = []
+    if config.gate.enabled:
+        message, selected = _evaluate_gated(prompt, config, backend, state)
+    elif config.mode.active == "remember":
         message = _evaluate_remember(config, backend, state)
     elif config.mode.active == "clue":
         message = _evaluate_clue(prompt, config, backend)
@@ -76,15 +85,76 @@ def evaluate_prompt(
     else:  # pragma: no cover - Config.validate() faengt das vorher ab
         raise ValueError(f"unbekannter Modus: {config.mode.active!r}")
 
-    if message is not None:
-        state.injections_count += 1
-        state.last_injection_ts = now
+    if message is None:
+        return None
+
+    message = sanitize_message(message, config.output)
+    if not message:
+        return None
+
+    digest = None
+    if config.gate.enabled:
+        relevance = max((hit.rank for hit in selected), default=0.0)
+        if relevance < config.gate.min_relevance:
+            return None
+        digest = selection_digest(selected)
+        change = 0.0 if digest == state.last_gate_digest else 1.0
+        if change < config.gate.min_change:
+            return None
+
+    state.injections_count += 1
+    state.last_injection_ts = now
+    if digest is not None:
+        state.last_gate_digest = digest
 
     return message
 
 
+def _evaluate_gated(
+    prompt: str,
+    config: Config,
+    backend: MemoryBackend,
+    state: SessionState,
+) -> tuple[str | None, list[Hit]]:
+    """Opt-in gate-first path; defaults never enter this function."""
+    if config.mode.active == "remember":
+        if not _safe_available(backend):
+            return None, []
+        if state.search_count < config.mode.search_after_n_searches:
+            return None, []
+        hits = _hook_search(backend, prompt, config.mode.max_hits, config, deterministic=True)
+        return (_REMEMBER_TEMPLATE, hits) if hits else (None, [])
+
+    if config.mode.active == "clue":
+        lowered = prompt.lower()
+        for trigger in config.clue.triggers:
+            if trigger.lower() not in lowered:
+                continue
+            hits = _hook_search(backend, trigger, 1, config, deterministic=True)
+            if hits and hits[0].rank >= config.mode.min_rank:
+                hit = hits[0]
+                return (
+                    f"[MemoryHooker] Stichwort '{trigger}' erkannt -- {hit.text} "
+                    f"(Quelle: {hit.source})",
+                    hits,
+                )
+        return None, []
+
+    if config.mode.active == "remember+search":
+        hits = _hook_search(
+            backend, prompt, config.mode.max_hits, config, deterministic=True
+        )
+        hits = [hit for hit in hits if hit.rank >= config.mode.min_rank]
+        if not hits:
+            return None, []
+        lines = [f"- ({hit.rank:.2f}) {hit.text} [{hit.source}]" for hit in hits]
+        return "[MemoryHooker] Gefundene Erkenntnisse:\n" + "\n".join(lines), hits
+
+    raise ValueError(f"unbekannter Modus: {config.mode.active!r}")
+
+
 def _evaluate_remember(config: Config, backend: MemoryBackend, state: SessionState) -> str | None:
-    if not backend.available():
+    if not _safe_available(backend):
         return None
     if state.search_count < config.mode.search_after_n_searches:
         return None
@@ -93,12 +163,12 @@ def _evaluate_remember(config: Config, backend: MemoryBackend, state: SessionSta
 
 def _evaluate_clue(prompt: str, config: Config, backend: MemoryBackend) -> str | None:
     lowered = prompt.lower()
-    if not backend.available():
+    if not _safe_available(backend):
         return None
     for trigger in config.clue.triggers:
         if trigger.lower() not in lowered:
             continue
-        hits = backend.search(trigger, limit=1)
+        hits = _hook_search(backend, trigger, 1, config)
         if hits and hits[0].rank >= config.mode.min_rank:
             hit = hits[0]
             return (
@@ -109,16 +179,33 @@ def _evaluate_clue(prompt: str, config: Config, backend: MemoryBackend) -> str |
 
 
 def _evaluate_search(prompt: str, config: Config, backend: MemoryBackend) -> str | None:
-    if not backend.available():
-        return None
     hits = [
-        h for h in backend.search(prompt, limit=config.mode.max_hits)
+        h for h in _hook_search(backend, prompt, config.mode.max_hits, config)
         if h.rank >= config.mode.min_rank
     ]
     if not hits:
         return None
     lines = [f"- ({h.rank:.2f}) {h.text} [{h.source}]" for h in hits[: config.mode.max_hits]]
     return "[MemoryHooker] Gefundene Erkenntnisse:\n" + "\n".join(lines)
+
+
+def _hook_search(
+    backend: MemoryBackend,
+    prompt: str,
+    limit: int,
+    config: Config,
+    *,
+    deterministic: bool = False,
+) -> list[Hit]:
+    if not _safe_available(backend):
+        return []
+    try:
+        raw = backend.search(prompt, limit=limit)
+        if deterministic:
+            return deterministic_hits(raw, config.output, limit)
+        return sanitize_hits(raw, config.output)[: max(0, limit)]
+    except Exception:
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +271,7 @@ def _safe_search(backend: MemoryBackend, prompt: str, limit: int) -> list[Hit]:
     if not _safe_available(backend):
         return []
     try:
-        return backend.search(prompt, limit=limit)
+        return sanitize_hits(backend.search(prompt, limit=limit), Config().output)[:limit]
     except Exception:
         return []
 

@@ -6,7 +6,7 @@
 [![open-bricks](https://img.shields.io/badge/umbrella-open--bricks-indigo.svg)](https://github.com/open-bricks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-156%20bestanden-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-177%20bestanden-brightgreen.svg)](tests/)
 [![llms.txt](https://img.shields.io/badge/llms.txt-verf%C3%BCgbar-0055ff?logo=markdown)](llms.txt)
 [![Language: English](https://img.shields.io/badge/Language-English-gb.svg)](README.md)
 
@@ -55,6 +55,23 @@ max_hits = 3
 max_injections_per_session = 5
 cooldown_seconds = 60
 
+[gate]
+# Explizites Opt-in; false bewahrt das bisherige Verhalten.
+enabled = false
+min_relevance = 0.5
+# 1.0 lässt eine identische bereinigte Auswahl stumm.
+min_change = 1.0
+
+[output]
+max_text_chars = 500
+max_source_chars = 160
+max_meta_chars = 160
+max_meta_entries = 32
+max_meta_total_chars = 1000
+max_message_chars = 2000
+redaction_marker = "[redacted]"
+truncation_marker = "…[truncated]"
+
 [backend]
 order = ["usmc", "gardener", "files"]
 
@@ -67,6 +84,15 @@ path = "./memory"
 
 `install-snippet` gibt nur einen Konfigurationsbaustein aus. Prüfe und
 übernimm ihn manuell.
+
+Das optionale Gate ist standardmäßig deaktiviert. Ist es aktiviert, werden
+Session-Cap und Cooldown vor der Suche geprüft. Danach werden Treffer
+bereinigt und total deterministisch sortiert. `min_relevance` ist die
+inklusive Rangschwelle. `min_change` vergleicht einen binären Änderungswert:
+`1.0` für eine gegenüber der letzten Ausgabe geänderte bereinigte Auswahl,
+`0.0` für dieselbe Auswahl. Persistiert wird nur deren SHA-256-Digest, niemals
+Prompt oder Rohtreffer. Status- und Versionsmetadaten fließen unverändert in
+den Digest ein, werden aber nicht als Wahrheit interpretiert.
 
 ### USMC-Backend
 
@@ -93,6 +119,10 @@ kuratierte Fakten/Lessons schlagen Working-Memory-Notizen.
 Das Datei-Backend liest nur ausdrücklich konfigurierte Markdown-Wurzeln. Die
 Gardener- und USMC-Adapter öffnen konfigurierte Datenbanken read-only.
 Treffer und Pfade können sensibel sein und dürfen nicht ungeprüft
-veröffentlicht werden.
+veröffentlicht werden. Vor der Hook-Ausgabe redigiert MemoryHooker gängige
+Secret-Zuweisungen, Token und absolute lokale Pfade deterministisch und
+begrenzt anschließend Text, Quelle, Metadaten und Gesamtnachricht. Rohtreffer
+bleiben ausschließlich im Backend-Prozess und werden nie im Session-State
+gespeichert.
 Sicherheitsmeldungen beschreibt [SECURITY.md](SECURITY.md), die Herkunft
 [PROVENANCE.md](PROVENANCE.md). Lizenz: MIT, siehe [LICENSE](LICENSE).

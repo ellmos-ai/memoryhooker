@@ -1,5 +1,5 @@
 from memoryhooker.backends import ChainBackend
-from memoryhooker.config import ClueConfig, Config, ModeConfig
+from memoryhooker.config import ClueConfig, Config, GateConfig, ModeConfig, OutputConfig
 from memoryhooker.modes import diagnose_prompt, evaluate_prompt, session_start_message
 from memoryhooker.protocol import Hit
 from memoryhooker.state import SessionState
@@ -15,6 +15,11 @@ class _StubBackend:
 
     def search(self, query: str, limit: int = 5) -> list[Hit]:
         return self._hits[:limit]
+
+
+class _FailIfSearched(_StubBackend):
+    def search(self, query: str, limit: int = 5) -> list[Hit]:
+        raise AssertionError("budget/cooldown must stop before search")
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +135,124 @@ def test_search_mode_silent_without_hits():
     backend = _StubBackend(hits=[])
     state = SessionState()
     assert evaluate_prompt("suche etwas", config, backend, state) is None
+
+
+# ---------------------------------------------------------------------------
+# Opt-in relevance/change gate + shared synthetic contract matrix
+# ---------------------------------------------------------------------------
+
+
+def _gated_search_config(**gate_overrides):
+    gate = GateConfig(enabled=True, min_relevance=0.5, min_change=1.0)
+    for name, value in gate_overrides.items():
+        setattr(gate, name, value)
+    return Config(
+        mode=ModeConfig(active="remember+search", min_rank=0.0, cooldown_seconds=0),
+        gate=gate,
+    )
+
+
+def test_gate_default_off_keeps_repeated_output_compatible():
+    config = Config(mode=ModeConfig(active="remember+search", cooldown_seconds=0))
+    backend = _StubBackend(hits=[Hit("same", "a.md", 0.9)])
+    state = SessionState()
+
+    assert evaluate_prompt("x", config, backend, state, now=0.0) is not None
+    assert evaluate_prompt("x", config, backend, state, now=1.0) is not None
+    assert state.last_gate_digest is None
+
+
+def test_gate_relevance_boundary_is_inclusive_and_below_is_silent():
+    config = _gated_search_config(min_relevance=0.5)
+
+    below = evaluate_prompt(
+        "x", config, _StubBackend(hits=[Hit("low", "a.md", 0.49)]), SessionState()
+    )
+    exact = evaluate_prompt(
+        "x", config, _StubBackend(hits=[Hit("exact", "a.md", 0.5)]), SessionState()
+    )
+
+    assert below is None
+    assert exact is not None
+
+
+def test_gate_silences_identical_selection_and_emits_changed_version_or_status():
+    config = _gated_search_config()
+    state = SessionState()
+    first = _StubBackend(
+        hits=[Hit("note", "a.md", 0.9, {"status": "candidate", "version": "v1"})]
+    )
+    changed = _StubBackend(
+        hits=[Hit("note", "a.md", 0.9, {"status": "contradicted", "version": "v2"})]
+    )
+
+    assert evaluate_prompt("x", config, first, state, now=0.0) is not None
+    assert evaluate_prompt("x", config, first, state, now=1.0) is None
+    assert evaluate_prompt("x", config, changed, state, now=2.0) is not None
+    assert state.injections_count == 2
+
+
+def test_gate_missing_anchor_is_preserved_without_truth_resolution():
+    config = _gated_search_config()
+    backend = _StubBackend(
+        hits=[Hit("uncertain", "", 0.9, {"status": "superseded", "stale": True})]
+    )
+
+    message = evaluate_prompt("x", config, backend, SessionState())
+
+    assert message is not None
+    assert "uncertain" in message
+    assert "[]" in message
+
+
+def test_gate_selection_order_is_deterministic_for_equal_rank():
+    config = _gated_search_config(min_change=0.0)
+    backend = _StubBackend(
+        hits=[Hit("second", "b.md", 0.9), Hit("first", "a.md", 0.9)]
+    )
+
+    message = evaluate_prompt("x", config, backend, SessionState())
+
+    assert message.index("first") < message.index("second")
+
+
+def test_cap_and_cooldown_stop_before_gated_backend_search():
+    config = _gated_search_config()
+    config.mode.max_injections_per_session = 1
+    config.mode.cooldown_seconds = 60
+
+    capped = SessionState(injections_count=1)
+    assert evaluate_prompt("x", config, _FailIfSearched(), capped, now=100.0) is None
+
+    cooling = SessionState(last_injection_ts=90.0)
+    assert evaluate_prompt("x", config, _FailIfSearched(), cooling, now=100.0) is None
+
+
+def test_hook_output_is_redacted_and_message_bounded():
+    config = _gated_search_config()
+    config.output = OutputConfig(max_text_chars=80, max_message_chars=100)
+    backend = _StubBackend(
+        hits=[Hit("token=supersecret C:\\Users\\alice\\memory.md " + "x" * 200, "C:\\private\\a.md", 0.9)]
+    )
+
+    message = evaluate_prompt("x", config, backend, SessionState())
+
+    assert message is not None
+    assert "supersecret" not in message
+    assert "alice" not in message
+    assert len(message) <= 100
+
+
+def test_hook_survives_backend_record_with_raising_properties():
+    class BrokenHit:
+        def __getattribute__(self, name):
+            if name in {"text", "source", "rank", "meta"}:
+                raise RuntimeError("hostile backend record")
+            return super().__getattribute__(name)
+
+    config = _gated_search_config()
+
+    assert evaluate_prompt("x", config, _StubBackend(hits=[BrokenHit()]), SessionState()) is None
 
 
 # ---------------------------------------------------------------------------

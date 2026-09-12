@@ -28,6 +28,25 @@ class ModeConfig:
 
 
 @dataclass
+class GateConfig:
+    enabled: bool = False
+    min_relevance: float = 0.5
+    min_change: float = 1.0
+
+
+@dataclass
+class OutputConfig:
+    max_text_chars: int = 500
+    max_source_chars: int = 160
+    max_meta_chars: int = 160
+    max_meta_entries: int = 32
+    max_meta_total_chars: int = 1000
+    max_message_chars: int = 2000
+    redaction_marker: str = "[redacted]"
+    truncation_marker: str = "…[truncated]"
+
+
+@dataclass
 class ClueConfig:
     triggers: list[str] = field(default_factory=list)
 
@@ -99,6 +118,8 @@ class BackendConfig:
 @dataclass
 class Config:
     mode: ModeConfig = field(default_factory=ModeConfig)
+    gate: GateConfig = field(default_factory=GateConfig)
+    output: OutputConfig = field(default_factory=OutputConfig)
     clue: ClueConfig = field(default_factory=ClueConfig)
     providers: ProvidersConfig = field(default_factory=ProvidersConfig)
     controlcenter: ControlCenterConfig = field(default_factory=ControlCenterConfig)
@@ -125,6 +146,25 @@ class Config:
             )
         if not (0.0 <= self.mode.min_rank <= 1.0):
             raise ValueError(f"[mode].min_rank muss in [0,1] liegen, nicht {self.mode.min_rank!r}")
+        for name, value in (
+            ("min_relevance", self.gate.min_relevance),
+            ("min_change", self.gate.min_change),
+        ):
+            if not (0.0 <= value <= 1.0):
+                raise ValueError(f"[gate].{name} muss in [0,1] liegen, nicht {value!r}")
+        for name in (
+            "max_text_chars",
+            "max_source_chars",
+            "max_meta_chars",
+            "max_meta_entries",
+            "max_meta_total_chars",
+            "max_message_chars",
+        ):
+            value = getattr(self.output, name)
+            if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                raise ValueError(f"[output].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
+        if not self.output.redaction_marker or not self.output.truncation_marker:
+            raise ValueError("[output]-Marker duerfen nicht leer sein")
 
 
 def default_config() -> Config:
@@ -166,6 +206,27 @@ def _config_from_dict(data: dict) -> Config:
         cooldown_seconds=mode_data.get("cooldown_seconds", ModeConfig.cooldown_seconds),
     )
 
+    gate_data = data.get("gate", {})
+    gate = GateConfig(
+        enabled=bool(gate_data.get("enabled", GateConfig.enabled)),
+        min_relevance=float(gate_data.get("min_relevance", GateConfig.min_relevance)),
+        min_change=float(gate_data.get("min_change", GateConfig.min_change)),
+    )
+
+    output_data = data.get("output", {})
+    output = OutputConfig(
+        max_text_chars=output_data.get("max_text_chars", OutputConfig.max_text_chars),
+        max_source_chars=output_data.get("max_source_chars", OutputConfig.max_source_chars),
+        max_meta_chars=output_data.get("max_meta_chars", OutputConfig.max_meta_chars),
+        max_meta_entries=output_data.get("max_meta_entries", OutputConfig.max_meta_entries),
+        max_meta_total_chars=output_data.get(
+            "max_meta_total_chars", OutputConfig.max_meta_total_chars
+        ),
+        max_message_chars=output_data.get("max_message_chars", OutputConfig.max_message_chars),
+        redaction_marker=output_data.get("redaction_marker", OutputConfig.redaction_marker),
+        truncation_marker=output_data.get("truncation_marker", OutputConfig.truncation_marker),
+    )
+
     clue_data = data.get("clue", {})
     clue = ClueConfig(triggers=list(clue_data.get("triggers", [])))
 
@@ -199,6 +260,8 @@ def _config_from_dict(data: dict) -> Config:
 
     return Config(
         mode=mode,
+        gate=gate,
+        output=output,
         clue=clue,
         providers=providers,
         controlcenter=controlcenter,

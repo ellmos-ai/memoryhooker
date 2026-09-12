@@ -6,7 +6,7 @@
 [![open-bricks](https://img.shields.io/badge/umbrella-open--bricks-indigo.svg)](https://github.com/open-bricks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-156%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-177%20passed-brightgreen.svg)](tests/)
 [![llms.txt](https://img.shields.io/badge/llms.txt-available-0055ff?logo=markdown)](llms.txt)
 [![Language: Deutsch](https://img.shields.io/badge/Language-Deutsch-de.svg)](README_de.md)
 
@@ -64,6 +64,23 @@ min_rank = 0.5
 max_injections_per_session = 5
 cooldown_seconds = 60
 
+[gate]
+# Explicit opt-in. With the default false, existing mode behavior is unchanged.
+enabled = false
+min_relevance = 0.5
+# 1.0 means that an identical sanitized selection stays silent.
+min_change = 1.0
+
+[output]
+max_text_chars = 500
+max_source_chars = 160
+max_meta_chars = 160
+max_meta_entries = 32
+max_meta_total_chars = 1000
+max_message_chars = 2000
+redaction_marker = "[redacted]"
+truncation_marker = "…[truncated]"
+
 [backend]
 order = ["usmc", "gardener", "files"]
 
@@ -83,6 +100,15 @@ order = ["claude", "codex", "kimi", "agy", "git", "manual"]
 
 The default mode is `remember`. A missing backend is not an error; the hook
 stays silent when no configured source is available.
+
+The optional gate is deliberately disabled by default. When enabled, session
+cap and cooldown are checked before search. Hits are then sanitized and put in
+a total deterministic order. `min_relevance` is the inclusive top-rank
+threshold. `min_change` compares a binary change score: `1.0` for a sanitized
+selection whose SHA-256 differs from the last emitted selection, `0.0` for an
+identical selection. Only that digest is persisted; prompts and raw hit data
+are not. Source-provided status/version metadata contributes to the digest but
+is never interpreted as truth.
 
 ### USMC backend
 
@@ -154,7 +180,11 @@ Run `diagnose` with the same prompt and flags to see which of these it is.
 The file backend reads Markdown below explicitly configured roots. The
 Gardener and USMC adapters open configured databases with SQLite read-only
 mode and never bundle database contents. Search hits and paths can be
-sensitive, so do not publish hook output or state files without review.
+sensitive. Before hook output, MemoryHooker deterministically redacts common
+secret assignments/tokens and absolute local paths, then bounds text, source,
+metadata, and the complete message. Raw backend records stay in process and
+are never written to session state. This is a defensive boundary, not a
+substitute for reviewing output before publication.
 
 See [SECURITY.md](SECURITY.md) for private vulnerability reporting and
 [PROVENANCE.md](PROVENANCE.md) for source-history and BACH lineage notes.

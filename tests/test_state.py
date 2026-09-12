@@ -20,6 +20,26 @@ def test_save_and_load_roundtrip(tmp_path: Path):
     assert loaded == state
 
 
+def test_state_persists_only_gate_digest_not_raw_selection(tmp_path: Path):
+    path = tmp_path / "state.json"
+    state = SessionState(last_gate_digest="a" * 64)
+
+    state.save(path)
+    payload = path.read_text(encoding="utf-8")
+
+    assert json.loads(payload)["last_gate_digest"] == "a" * 64
+    assert "Hit.text" not in payload
+    assert "C:\\\\Users" not in payload
+
+
+def test_state_omits_gate_field_while_opt_in_gate_is_unused(tmp_path: Path):
+    path = tmp_path / "state.json"
+
+    SessionState().save(path)
+
+    assert "last_gate_digest" not in json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_record_search_increments():
     state = SessionState()
     state.record_search()

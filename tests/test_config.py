@@ -23,6 +23,10 @@ def test_default_config_matches_readme_defaults():
     assert config.providers.claude_events == ["SessionStart", "UserPromptSubmit"]
     assert config.controlcenter.enabled == "auto"
     assert config.backend.kind == "files"
+    assert config.gate.enabled is False
+    assert config.gate.min_relevance == 0.5
+    assert config.gate.min_change == 1.0
+    assert config.output.max_message_chars == 2000
 
 
 def test_load_config_missing_path_returns_defaults(tmp_path: Path):
@@ -44,6 +48,15 @@ max_hits = 7
 min_rank = 0.2
 max_injections_per_session = 2
 
+[gate]
+enabled = true
+min_relevance = 0.7
+min_change = 0.0
+
+[output]
+max_text_chars = 80
+max_message_chars = 240
+
 [clue]
 triggers = ["MemoryHooker"]
 
@@ -58,6 +71,11 @@ path = "C:/tmp/gardener-data"
     assert config.mode.max_hits == 7
     assert config.mode.min_rank == 0.2
     assert config.mode.max_injections_per_session == 2
+    assert config.gate.enabled is True
+    assert config.gate.min_relevance == 0.7
+    assert config.gate.min_change == 0.0
+    assert config.output.max_text_chars == 80
+    assert config.output.max_message_chars == 240
     assert config.clue.triggers == ["MemoryHooker"]
     assert config.backend.kind == "gardener"
     assert config.backend.path == "C:/tmp/gardener-data"
@@ -80,5 +98,20 @@ def test_load_config_rejects_invalid_backend(tmp_path: Path):
 def test_config_validate_rejects_out_of_range_min_rank():
     config = Config()
     config.mode.min_rank = 1.5
+    with pytest.raises(ValueError):
+        config.validate()
+
+
+@pytest.mark.parametrize("field", ["min_relevance", "min_change"])
+def test_config_validate_rejects_out_of_range_gate_threshold(field):
+    config = Config()
+    setattr(config.gate, field, 1.5)
+    with pytest.raises(ValueError):
+        config.validate()
+
+
+def test_config_validate_rejects_non_positive_output_bound():
+    config = Config()
+    config.output.max_message_chars = 0
     with pytest.raises(ValueError):
         config.validate()

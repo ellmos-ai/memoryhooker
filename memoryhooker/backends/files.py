@@ -49,7 +49,7 @@ _STOPWORDS = frozenset(
 
 
 class FilesBackend:
-    """Sucht in ``*.md``-Dateien unterhalb eines oder mehrerer Wurzeln."""
+    """Sucht in ``*.md``-Dateien unterhalb eines oder mehrerer Wurzeln oder in einzelnen Dateien."""
 
     def __init__(
         self,
@@ -65,7 +65,7 @@ class FilesBackend:
         self.root = self.roots[0] if self.roots else None
 
     def available(self) -> bool:
-        return any(root.is_dir() for root in self.roots)
+        return any(root.is_dir() or root.is_file() for root in self.roots)
 
     def search(self, query: str, limit: int = 5) -> list[Hit]:
         if not self.available():
@@ -78,40 +78,69 @@ class FilesBackend:
         hits: list[Hit] = []
         seen: set[Path] = set()
         for root in self.roots:
-            if not root.is_dir():
-                continue
-            for path in sorted(root.rglob("*.md")):
+            if root.is_file():
                 try:
-                    resolved = path.resolve()
+                    resolved = root.resolve()
                 except OSError:
-                    resolved = path.absolute()
+                    resolved = root.absolute()
                 if resolved in seen:
                     continue
                 seen.add(resolved)
-                try:
-                    text = path.read_text(encoding="utf-8", errors="ignore")
-                except OSError:
-                    continue
-
-                lowered = text.lower()
-                score = sum(lowered.count(term) for term in terms)
-                if score == 0:
-                    continue
-
-                # Sanftes Sättigungsmaß statt reinem Zählwert.
-                rank = score / (score + 3)
-                snippet = _snippet(text, lowered, terms)
-                hits.append(
-                    Hit(
-                        text=snippet,
-                        source=str(path.relative_to(root)),
-                        rank=rank,
-                        meta={"path": str(path), "root": str(root)},
-                    )
-                )
+                self._process_file(root, root.name, root.parent, terms, hits)
+            elif root.is_dir():
+                for path in sorted(root.rglob("*.md")):
+                    try:
+                        resolved = path.resolve()
+                    except OSError:
+                        resolved = path.absolute()
+                    if resolved in seen:
+                        continue
+                    seen.add(resolved)
+                    try:
+                        source = str(path.relative_to(root))
+                    except ValueError:
+                        source = path.name
+                    self._process_file(path, source, root, terms, hits)
 
         hits.sort(key=lambda h: h.rank, reverse=True)
         return hits[:limit]
+
+    @staticmethod
+    def _process_file(
+        path: Path,
+        source: str,
+        root_ctx: Path,
+        terms: list[str],
+        hits: list[Hit],
+    ) -> None:
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return
+
+        lowered = text.lower()
+        counts = [lowered.count(term) for term in terms]
+        matched_count = sum(1 for c in counts if c > 0)
+        if matched_count == 0:
+            return
+
+        # Begründete Normalisierung auf (0, 1]:
+        # 1. Term-Abdeckung (Coverage): Anteil der gesuchten Terme im Dokument (60%).
+        # 2. Term-Sättigung (TF): Durchschnittliche Sättigung count / (count + 2) (40%).
+        num_terms = len(terms)
+        coverage = matched_count / num_terms
+        avg_tf = sum(c / (c + 2.0) for c in counts) / num_terms
+        rank = round(0.6 * coverage + 0.4 * avg_tf, 4)
+
+        snippet = _snippet(text, lowered, terms)
+        hits.append(
+            Hit(
+                text=snippet,
+                source=source,
+                rank=rank,
+                meta={"path": str(path), "root": str(root_ctx)},
+            )
+        )
 
 
 def _terms_from_query(query: str) -> list[str]:

@@ -56,6 +56,9 @@ class SessionState:
     # den Kalendertag der letzten Schreibung fest; load() erkennt sowohl
     # einen neuen Tag als auch eine Alt-Datei aus der Zeit vor diesem Feld.
     state_date: str = field(default_factory=_today)
+    # Privacy boundary for the opt-in change gate. This is only a SHA-256 of
+    # already sanitized selection data; raw hits, prompts and paths never enter state.
+    last_gate_digest: str | None = None
 
     @classmethod
     def load(cls, path: Path) -> "SessionState":
@@ -76,7 +79,11 @@ class SessionState:
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(asdict(self)), encoding="utf-8")
+        data = asdict(self)
+        # Preserve the byte-level legacy shape while the opt-in gate is off.
+        if self.last_gate_digest is None:
+            data.pop("last_gate_digest")
+        path.write_text(json.dumps(data), encoding="utf-8")
 
     def record_search(self) -> None:
         self.search_count += 1

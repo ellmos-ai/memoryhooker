@@ -2,6 +2,23 @@
 
 Future work is tracked against observable acceptance criteria:
 
+## TASKPLAN-Aufnahme (2026-08-20)
+
+Die fünf expliziten TODO-Lücken wurden mit Quelle, Soll/Ist-Ableitung,
+Definition of Done, Prüfweg, Abhängigkeiten, Aufwand und Reichweite im
+TASKPLAN formalisiert:
+
+- #2083 `MH-GATE-001`: optionaler Gate-first-Modus (`medium`, `local`)
+- #2084 `MH-ANCHOR-002`: Quellenanker und quellenseitige Statusmetadaten
+  (`large`, `local`)
+- #2085 `MH-REDACT-003`: Redaction- und Größenbegrenzung (`medium`, `local`)
+- #2086 `MH-TEST-004`: synthetische Vertragsmatrix (`medium`, `local`)
+- #2087 `MH-FILES-005`: Files-Ranking und einzelne Dateipfade (`medium`, `local`)
+
+Die übrigen Punkte dieses Dokuments bleiben als geplante, noch nicht
+aktivierte Roadmap-Ideen erhalten; insbesondere wird der reservierte BACH-
+Adapter nicht durch diese Aufnahme autorisiert.
+
 - Add contract tests for each supported host version.
 - Add a documented, read-only API before enabling the reserved BACH adapter
   (see `tests/test_backends_usmc.py` for the pattern the USMC adapter used:

@@ -6,6 +6,17 @@ All notable public changes are documented in this file.
 
 ### Added
 
+- Optional `[gate]` relevance/change thresholds with a backwards-compatible
+  disabled default. The gate uses deterministic sanitized hit selection and
+  persists only a SHA-256 selection digest; source status/version metadata is
+  passed through without truth resolution.
+- Normalized `FilesBackend` ranking combining term coverage (60%) and bounded
+  term frequency saturation (40%) in `(0, 1]`, with support for individual file paths
+  alongside directories and multi-root deduplication.
+- A shared synthetic contract matrix for contradicted/stale metadata, missing
+  anchors, budget/cooldown ordering, repeated selections, deterministic ties,
+  malformed hits, redaction, and output bounds.
+
 - `diagnose` command: reports each of the three gates (config source, session
   cap/cooldown, per-backend availability/hit-count/top-rank) individually for
   a given prompt, without writing to any hook output and without mutating
@@ -19,6 +30,12 @@ All notable public changes are documented in this file.
   operators an explicit reset for a session cap that got stuck.
 
 ### Fixed
+
+- Backend-derived hook output now crosses one deterministic privacy/size
+  boundary before interpolation or persistence. Common secret assignments,
+  tokens, and absolute local paths are redacted before per-field and whole
+  message bounds are applied; malformed records fail silent instead of
+  crashing the hook.
 
 - `SessionState` now carries a `state_date` (calendar day) and resets on
   `load()` when that day has passed or is missing entirely. Without this, a

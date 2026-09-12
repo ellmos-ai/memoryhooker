@@ -109,3 +109,57 @@ def test_search_strips_punctuation_from_terms(tmp_path: Path):
     # als Ganzes kaeme im Text nie vor, die Tokens schon.
     hits = backend.search("Was ist memoryhooker.toml?")
     assert hits and hits[0].source == "a.md"
+
+
+def test_search_single_file_as_root(tmp_path: Path):
+    single_file = tmp_path / "single_memo.md"
+    single_file.write_text("Dies ist eine einzelne Notiz ueber Architektur.", encoding="utf-8")
+
+    backend = FilesBackend(single_file)
+    assert backend.available() is True
+
+    hits = backend.search("Architektur")
+    assert len(hits) == 1
+    assert hits[0].source == "single_memo.md"
+    assert hits[0].meta["path"] == str(single_file)
+    assert hits[0].meta["root"] == str(tmp_path)
+    assert 0 < hits[0].rank <= 1.0
+
+
+def test_search_mixed_roots_and_deduplication(tmp_path: Path):
+    dir_path = tmp_path / "notes"
+    dir_path.mkdir()
+    shared_file = dir_path / "shared.md"
+    shared_file.write_text("Wichtiger Eintrag fuer Projekt-Planung.", encoding="utf-8")
+
+    other_file = tmp_path / "standalone.md"
+    other_file.write_text("Planung fuer naechstes Quartal.", encoding="utf-8")
+
+    missing_path = tmp_path / "does_not_exist.md"
+
+    backend = FilesBackend(roots=[dir_path, shared_file, other_file, missing_path])
+    assert backend.available() is True
+
+    hits = backend.search("Planung")
+    # shared_file ist im Verzeichnis und explizit als Einzeldatei angegeben -> genau 1 Treffer da dedupliziert
+    assert len(hits) == 2
+    sources = {h.source for h in hits}
+    assert "shared.md" in sources
+    assert "standalone.md" in sources
+
+
+def test_normalized_ranking_favors_multi_term_coverage(tmp_path: Path):
+    # doc_full enthält beide Suchbegriffe je 1x
+    # doc_single enthält nur einen Begriff, aber 10x
+    (tmp_path / "full.md").write_text("authentifizierung und autorisierung im system", encoding="utf-8")
+    (tmp_path / "single.md").write_text("authentifizierung " * 10, encoding="utf-8")
+
+    backend = FilesBackend(tmp_path)
+    hits = backend.search("authentifizierung autorisierung")
+    assert len(hits) == 2
+    assert hits[0].source == "full.md"
+    assert hits[1].source == "single.md"
+    assert hits[0].rank > hits[1].rank
+    assert 0 < hits[0].rank <= 1.0
+    assert 0 < hits[1].rank <= 1.0
+
