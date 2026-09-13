@@ -40,7 +40,7 @@ _STOPWORDS = frozenset(
         "weil", "wenn", "wie", "wir", "wird", "wo", "zu", "zum", "zur",
         # Englisch
         "the", "and", "for", "with", "this", "that", "from", "have",
-        "has", "are", "was", "were", "not", "but", "all", "can", "you",
+        "has", "are", "were", "not", "but", "all", "can", "you",
         "your", "its", "our", "their", "them", "they", "what", "which",
         "when", "where", "how", "then", "there", "here", "into", "only",
         "very", "just",

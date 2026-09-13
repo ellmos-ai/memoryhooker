@@ -61,7 +61,7 @@ class SessionState:
     last_gate_digest: str | None = None
 
     @classmethod
-    def load(cls, path: Path) -> "SessionState":
+    def load(cls, path: Path) -> SessionState:
         if not path.exists():
             return cls()
         try:

@@ -59,10 +59,11 @@ def test_sensitive_meta_is_redacted_but_status_and_version_pass_through():
 
 def test_malformed_hit_is_hook_safe():
     class Broken:
-        text = None
-        source = None
-        rank = "not-a-number"
-        meta = ["not", "a", "mapping"]
+        def __init__(self):
+            self.text = None
+            self.source = None
+            self.rank = "not-a-number"
+            self.meta = ["not", "a", "mapping"]
 
     cleaned = sanitize_hit(Broken(), OutputConfig())
 

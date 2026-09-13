@@ -121,7 +121,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load(args) -> tuple[Config, "object"]:
+def _load(args) -> tuple[Config, object]:
     config = load_config(args.config)
     backend = build_backend(config)
     return config, backend
@@ -145,7 +145,7 @@ def _cmd_check(args) -> int:
 
 
 def _cmd_session_start(args) -> int:
-    config, backend = _load(args)
+    _config, backend = _load(args)
     state_path = _state_path(args)
     state = SessionState.load(state_path)
 

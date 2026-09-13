@@ -21,13 +21,13 @@ from .gardener import GardenerBackend
 from .usmc import UsmcBackend
 
 __all__ = [
-    "Hit",
-    "MemoryBackend",
-    "FilesBackend",
-    "GardenerBackend",
-    "UsmcBackend",
     "BachBackend",
     "ChainBackend",
+    "FilesBackend",
+    "GardenerBackend",
+    "Hit",
+    "MemoryBackend",
+    "UsmcBackend",
     "build_backend",
 ]
 

@@ -2,7 +2,19 @@
 
 All notable public changes are documented in this file.
 
-## Unreleased
+## [0.3.3] - 2026-09-14
+
+### Discoverability & Marketing Architecture (Pfad B)
+
+- **Bilingual Documentation Parity**: Synchronized English (`README.md`) and German (`README_de.md`) documentation with full 16-point navigation anchor parity.
+- **Target Personas & SEO Discovery**: Added detailed persona breakdowns (Coding Agent Engineers, Local-First Privacy Advocates, Multi-Agent Swarm Orchestrators, Compliance Officers) with high-intent search keywords.
+- **5-Way Comparative Matrix**: Structured comparative analysis across 10 dimensions vs. ad-hoc scripts, cloud vector DB RAG, raw chat history buffers, and heavy agent memory frameworks (MemGPT/Letta).
+- **System Architecture & Lifecycle Visuals**: Designed Mermaid flowchart and sequence diagrams for end-to-end task flows and security gates.
+- **10 Governance & Runtime Invariants**: Formalized invariants `INV-LOCAL-01` through `INV-SLA-10` covering zero-egress, read-only storage, unprivileged execution, redaction, and SLAs.
+- **Third-Party License Audit**: Created [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) verifying 100% permissive dependencies (PSFL-2.0, MIT, Apache-2.0) with zero copyleft.
+- **PEP 621 Metadata URLs**: Expanded URLs in `pyproject.toml` to include Third-Party Licenses, Marketing Log, and LLM Ready links.
+- **Extended Contract Test Suite**: Added automated tests in `tests/test_metadata.py` validating navigation anchor parity, personas, matrices, invariants, and package manifests.
+- **Visual Assets**: Generated raster asset `docs/assets/banner.png` from vector `docs/assets/banner.svg`.
 
 ### Added
 
@@ -16,7 +28,6 @@ All notable public changes are documented in this file.
 - A shared synthetic contract matrix for contradicted/stale metadata, missing
   anchors, budget/cooldown ordering, repeated selections, deterministic ties,
   malformed hits, redaction, and output bounds.
-
 - `diagnose` command: reports each of the three gates (config source, session
   cap/cooldown, per-backend availability/hit-count/top-rank) individually for
   a given prompt, without writing to any hook output and without mutating
@@ -36,7 +47,6 @@ All notable public changes are documented in this file.
   tokens, and absolute local paths are redacted before per-field and whole
   message bounds are applied; malformed records fail silent instead of
   crashing the hook.
-
 - `SessionState` now carries a `state_date` (calendar day) and resets on
   `load()` when that day has passed or is missing entirely. Without this, a
   state file with no session id in the hook payload -- most commonly manual

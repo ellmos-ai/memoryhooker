@@ -2,23 +2,29 @@
 
 Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
 
-Last-checked: 2026-08-16
+Version: 0.3.3
+Last-checked: 2026-09-14
 Ecosystem: ellmos-ai
 Umbrella: open-bricks
 
 ## Important files
 
-- README.md: public usage, configuration, providers, backends, and boundaries.
-- SECURITY.md: private vulnerability-reporting requirements.
-- PROVENANCE.md: clean-history and BACH lineage statement.
-- memoryhooker/config.py: configuration schema and safe defaults.
-- memoryhooker/backends/: local read-only retrieval adapters.
-- memoryhooker/providers/: host-specific snippet generators.
-- tests/: 156 automated behavior, metadata parity, and provider-contract tests.
+- README.md: Public usage, visual architecture, configuration, providers, backends, and comparative matrix.
+- README_de.md: Deutsche Dokumentation mit vollständiger 16-Punkte-Anker-Parität.
+- SECURITY.md: Private vulnerability-reporting requirements, threat model, and 48-hour response SLA.
+- THIRD_PARTY_LICENSES.md: Audited permissive licenses (PSFL-2.0, MIT, Apache-2.0) and zero-copyleft guarantee.
+- MARKETING-LOG.txt: Target personas, discoverability keywords, and comparative matrix audit.
+- PROVENANCE.md: Clean-history and BACH lineage statement.
+- memoryhooker/config.py: Configuration schema, mode definitions, and safe defaults.
+- memoryhooker/backends/: Local read-only retrieval adapters (USMC, Gardener, Files, BACH).
+- memoryhooker/providers/: Host-specific snippet generators (Claude Code, Codex, Kimi, Antigravity, Git, manual).
+- tests/: 180+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
 
 ## Safety properties
 
-- The package performs no network requests.
-- Host configuration is never edited automatically.
-- The Gardener and USMC backends open configured databases read-only.
-- Unavailable backends fail open and produce no hits.
+- The package performs no network requests (100% Zero-Egress).
+- Host configuration is never edited automatically (`install-snippet` prints manual instructions).
+- The Gardener and USMC backends open configured databases strictly read-only (`mode=ro`).
+- Deterministic privacy boundary redacts secret tokens and absolute paths before emission.
+- Session cap, cooldown, and calendar-day TTL prevent runaway injection loops.
+- Unavailable backends fail open and produce no hits without disrupting the agent harness.

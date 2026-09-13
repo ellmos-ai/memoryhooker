@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "memoryhooker"
-version = "0.3.2"
+version = "0.3.3"
 description = "Local-first memory reminders and retrieval for coding-agent hooks."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,9 @@ Changelog = "https://github.com/ellmos-ai/memoryhooker/blob/main/CHANGELOG.md"
 Security = "https://github.com/ellmos-ai/memoryhooker/blob/main/SECURITY.md"
 "Parent Organization" = "https://github.com/ellmos-ai"
 "Umbrella Ecosystem" = "https://github.com/open-bricks"
+"Third-Party Licenses" = "https://github.com/ellmos-ai/memoryhooker/blob/main/THIRD_PARTY_LICENSES.md"
+"Marketing Log" = "https://github.com/ellmos-ai/memoryhooker/blob/main/MARKETING-LOG.txt"
+"LLM Ready" = "https://github.com/ellmos-ai/memoryhooker/blob/main/llms.txt"
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
@@ -56,6 +59,6 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RUF"]
 ignore = ["E501", "E402"]
 

@@ -105,7 +105,7 @@ class BackendConfig:
 
     def chain(self) -> list[str]:
         """Effektive Backend-Reihenfolge -- ``order`` falls gesetzt, sonst ``[kind]``."""
-        return [name for name in self.order] if self.order else [self.kind]
+        return list(self.order) if self.order else [self.kind]
 
     def options_for(self, name: str) -> dict:
         """Optionen eines Kettenglieds; faellt auf ``path`` der Haupttabelle zurueck."""

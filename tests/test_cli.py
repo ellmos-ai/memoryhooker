@@ -67,9 +67,9 @@ def test_record_search_then_check_fires_remember(tmp_path, capsys):
     state_dir = tmp_path / "state"
     common = ["--config", str(config_path), "--state-dir", str(state_dir)]
 
-    main(common + ["record-search"])
-    main(common + ["record-search"])
-    exit_code = main(common + ["check", "prompt"])
+    main([*common, "record-search"])
+    main([*common, "record-search"])
+    exit_code = main([*common, "check", "prompt"])
 
     assert exit_code == 0
     assert "MemoryHooker" in capsys.readouterr().out
@@ -381,16 +381,16 @@ def test_clear_unblocks_the_session_cap(tmp_path, capsys):
     # cooldown_seconds=0, sonst blockiert bereits der zweite Aufruf ueber
     # den Cooldown und der Cap wird nie wirklich erreicht.
     for _ in range(5):
-        main(common + ["check", "prompt"])
+        main([*common, "check", "prompt"])
     capsys.readouterr()
 
-    exit_code = main(common + ["check", "sollte stumm bleiben"])
+    exit_code = main([*common, "check", "sollte stumm bleiben"])
     assert exit_code == 0
     assert capsys.readouterr().out == "", "Cap muss vor dem Reset noch greifen"
 
     main(["--state-dir", str(state_dir), "clear"])
 
-    exit_code = main(common + ["check", "nach clear wieder aktiv"])
+    exit_code = main([*common, "check", "nach clear wieder aktiv"])
     assert exit_code == 0
     assert "MemoryHooker" in capsys.readouterr().out
 
@@ -442,15 +442,15 @@ def test_diagnose_never_mutates_state_or_counts_as_injection(tmp_path, capsys):
     state_dir = tmp_path / "state"
     common = ["--config", str(config_path), "--state-dir", str(state_dir)]
 
-    main(common + ["diagnose", "Testnotiz"])
-    main(common + ["diagnose", "Testnotiz"])
-    main(common + ["diagnose", "Testnotiz"])
+    main([*common, "diagnose", "Testnotiz"])
+    main([*common, "diagnose", "Testnotiz"])
+    main([*common, "diagnose", "Testnotiz"])
     capsys.readouterr()
 
     # State-Datei entsteht erst gar nicht -- diagnose schreibt nie.
     assert not state_dir.exists()
 
-    exit_code = main(common + ["check", "Testnotiz"])
+    exit_code = main([*common, "check", "Testnotiz"])
     assert exit_code == 0
     assert "MemoryHooker" in capsys.readouterr().out
 
@@ -470,10 +470,10 @@ def test_diagnose_shows_exhausted_cap_reason(tmp_path, capsys):
     common = ["--config", str(config_path), "--state-dir", str(state_dir)]
 
     for _ in range(5):
-        main(common + ["check", "prompt"])
+        main([*common, "check", "prompt"])
     capsys.readouterr()
 
-    main(common + ["diagnose", "prompt"])
+    main([*common, "diagnose", "prompt"])
     out = capsys.readouterr().out
     assert "Session-Cap: 5/5" in out
     assert "ERSCHOEPFT" in out

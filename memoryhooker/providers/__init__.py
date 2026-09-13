@@ -9,13 +9,13 @@ liefert den ersten verfuegbaren.
 from __future__ import annotations
 
 from ..config import ProvidersConfig
+from .agy import AgyProvider
 from .base import Provider, UnimplementedProvider
 from .claude import ClaudeProvider
 from .codex import CodexProvider
 from .git import GitProvider
-from .manual import ManualProvider
-from .agy import AgyProvider
 from .kimi import KimiProvider
+from .manual import ManualProvider
 
 PROVIDER_REGISTRY: dict[str, Provider] = {
     "claude": ClaudeProvider(),
@@ -27,15 +27,15 @@ PROVIDER_REGISTRY: dict[str, Provider] = {
 }
 
 __all__ = [
-    "Provider",
-    "UnimplementedProvider",
+    "PROVIDER_REGISTRY",
+    "AgyProvider",
     "ClaudeProvider",
     "CodexProvider",
     "GitProvider",
-    "ManualProvider",
-    "AgyProvider",
     "KimiProvider",
-    "PROVIDER_REGISTRY",
+    "ManualProvider",
+    "Provider",
+    "UnimplementedProvider",
     "resolve_provider",
 ]
 

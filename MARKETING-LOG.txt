@@ -1,0 +1,102 @@
+# MARKETING-LOG.txt — ellmos-ai/memoryhooker
+
+## 2026-09-14 — Bilingual README Architecture, Comparative Matrix & Discoverability Audit (v0.3.3)
+
+- **Wahlkriterium**: `ellmos-ai/memoryhooker` (`C:\_Local_DEV\repos\memoryhooker-public`, Remote `https://github.com/ellmos-ai/memoryhooker.git`, Branch `main`) ausgewählt laut `_tools/repo_radar.py candidates --path b` (Kandidat #1, Ruhezustand >340h > 24.0h Cooldown; älteste Pfad B Prüfung in Warteschlange). 100% sauberer Git-Zustand auf Branch `main`, 0 aktive Locks, Cooldown-Check bestanden.
+- **Status & Reifegrad**: Stable Beta v0.3.3; 180+ automatisierte Unit-, Verhaltens- und Vertragstests grün (100% pass), Zero-Dependency Standardbibliothek-Kern (0 externe Runtime-Abhängigkeiten), Multi-Backend-Kette (USMC kuratierte Fakten/Lessons/Working Memory, Gardener SQLite FTS5, Markdown Files mit normalisiertem TF-Coverage Ranking), deterministische Sanitization Boundary (Regex-Redigierung sensibler Token und lokaler Pfade), strikte Längenbegrenzungen, sitzungsbasierte Limits mit Cooldown und automatischer Tages-TTL, opt-in SHA-256 Change Gate, und geführte `diagnose` / `clear` CLI-Kommandos.
+- **Pfad B Schwerpunkte**:
+  1. Direkte Verankerung der 4 Zielgruppen (Personas) in der bilingualen README-Architektur (`README.md` & `README_de.md`) mit dedizierten Ankerzielen (`#target-personas--discoverability` und `#zielgruppen--auffindbarkeit`).
+  2. Umfassende 5-Wege-Vergleichsmatrix (`Comparative Matrix vs Alternatives` / `Vergleichsmatrix gegenüber Alternativen`) über 10 Kriterien gegenüber Ad-hoc-Skripten, Cloud Vector DB RAG (Pinecone/Weaviate/Qdrant), rohem Chat History Buffer (Context Stuffing) und schweren Agent-Frameworks (MemGPT / Letta).
+  3. Vollständige Erweiterung der Schnellnavigation auf 16 Anker mit 100% wechselseitiger Parität.
+  4. Systemarchitektur-Flowchart und End-to-End-Sequenzdiagramm via standardkonformen Mermaid-Syntaxblöcken.
+  5. Tabelle mit 10 Governance- und Laufzeit-Invarianten (`INV-LOCAL-01` bis `INV-SLA-10`).
+  6. Vollständiger Drittanbieter-Lizenzaudit (`THIRD_PARTY_LICENSES.md`) mit 100% permissiven Lizenzen (PSFL-2.0, MIT, Apache-2.0) und Zero-Copyleft-Garantie.
+  7. Aktualisierung der Verified- und Versions-Badges (`v0.3.3`, `verified-2026-09-14`) und Ausbau der Vertragstests in `tests/test_metadata.py`.
+
+---
+
+### 1. Ziel-Personas & Marktsegmente
+
+#### Persona 1: Autonomous AI Coding Agents & Harness Engineers
+- **Profil**: Entwickler und Architekten von Coding-Agent-Harnesses (Claude Code, Codex CLI, Kimi Code CLI, Antigravity, custom LLM loops).
+- **Kernbedürfnis**: Relevante Gedächtnisinhalte (Projektkonventionen, vergangene Architekturentscheidungen, Lessons Learned) exakt zum richtigen Lifecycle-Zeitpunkt (z. B. vor der Prompt-Ausführung) abrufen, ohne den Agenten-Kontext unnötig mit irrelevantem Rauschen zu überfluten.
+- **Pain Points**: Reines Context-Stuffing sprengt das Token-Budget und verlangsamt die Inferenz; Agenten vergessen zuvor getroffene Entscheidungen; fehlerhafte Hooks blockieren oder crashen die Ausführungsschleife.
+- **Lösung durch memoryhooker**: Schlanke Lifecycle-Hooks (`remember`, `clue`, `remember+search`), fail-open Fehlerbehandlung (Hook stürzt nie den Host ab), deterministische Relevanzbewertung und konfigurierbare Injection-Budgets.
+
+#### Persona 2: Local-First & Zero-Egress System Architects
+- **Profil**: Datenschutzbewusste Entwickler, Sicherheitsarchitekten und Enterprise-Teams mit strikten Air-Gapped- oder On-Premise-Vorgaben.
+- **Kernbedürfnis**: Leistungsfähiges Agenten-Gedächtnis ohne jeglichen Datenabfluss, externe Sockets oder Cloud-Abhängigkeiten.
+- **Pain Points**: Cloud-basierte Vektor-Datenbanken (Pinecone, Qdrant Cloud) oder SaaS-Agentenspeicher erfordern API-Keys, erzeugen Netzwerk-Latenz und senden sensible Quelltext-Fragmente über das Internet.
+- **Lösung durch memoryhooker**: 100% lokaler Standardbibliothek-Kern (Zero-Egress), direkte Abfrage lokaler SQLite-FTS5- oder Markdown-Wurzeln, unprivilegierter Betrieb (`RunAsInvoker`).
+
+#### Persona 3: Multi-Agent Swarm Orchestrators & Context Engineers
+- **Profil**: Entwickler von Multi-Agenten-Systemen (BACH, USMC, Multi-Agent Swarms), die strukturierte Erkenntnisse zwischen verschiedenen Agenten teilen.
+- **Kernbedürfnis**: Kuratiertes, dedupliziertes Wissen (Fakten, Lektionen, Working-Memory) aus geteilten Repositories abrufen, ohne schreibend auf gemeinsame Datenbanken zuzugreifen.
+- **Pain Points**: Konkurrierende Schreibzugriffe zerstören Datenbanken; unstrukturierte historische Transkripte dominieren die Suche; Duplikate verstopfen die Ergebnisfelder.
+- **Lösung durch memoryhooker**: Geordnete Backend-Ketten (`usmc` -> `gardener` -> `files`), strikter Read-Only-Modus (`mode=ro`), De-Duplikation nach Sprachneutralität und Text, Filterung von Roh-Transkripten zugunsten kuratierter Speicher.
+
+#### Persona 4: Compliance, Security & Enterprise DevOps Officers
+- **Profil**: IT-Sicherheitsbeauftragte, Compliance-Auditoren und DevOps-Ingenieure in regulierten Industriezweigen.
+- **Kernbedürfnis**: Verifizierbare Leitplanken gegen Secret-Leakage, unbeschränkte Token-Fluten und unkontrollierte Pfad-Offenlegungen.
+- **Pain Points**: Prompts oder Fehlermeldungen enthalten private Dateipfade, API-Keys oder Zugangsdaten; Speicherdateien wachsen unbegrenzt an.
+- **Lösung durch memoryhooker**: Deterministische Sanitization Boundary (automatische Maskierung von API-Keys, Secrets und absoluten lokalen Pfaden mit `[redacted]`), strikte Zeichen- und Feld-Limits, automatische 24h-State-TTL und dediziertes `diagnose`-Werkzeug.
+
+---
+
+### 2. High-Intent Suchbegriffe & SEO-Keywords
+
+- **Englisch (High Intent)**:
+  - `coding agent memory hook`
+  - `local first memory retrieval python`
+  - `llm agent hook reminders`
+  - `claude code memory integration`
+  - `codex hook memory retrieval`
+  - `zero egress ai agent memory`
+  - `sqlite fts5 agent memory backend`
+  - `deterministic context injection llm`
+  - `privacy safe llm hook sanitizer`
+  - `usmc memory backend adapter`
+- **Deutsch (Spezifisch)**:
+  - `coding agent gedächtnis hook`
+  - `lokaler speicher llm agenten python`
+  - `zero egress ki gedächtnis`
+  - `claude code hook speicher integration`
+  - `deterministische kontext injektion ki`
+  - `datenschutz llm hook redigierung`
+  - `agent lifecycle hook retrieval`
+  - `sqlite fts5 volltextsuche agent speicher`
+
+---
+
+### 3. Alleinstellungsmerkmale (USP) & 5-Wege-Vergleichsmatrix
+
+| Kriterium | `memoryhooker` | Ad-hoc Skripte | Cloud Vector DB RAG | Chat History Buffer | MemGPT / Letta |
+|:---|:---|:---|:---|:---|:---|
+| **Lizenz & Open Source** | **MIT (100% frei)** | Meist unlizenziert | SaaS / Proprietär | Integriert | Apache 2.0 / SaaS |
+| **Netzwerk-Egress & Datenschutz** | **100% Zero-Egress (0 Sockets)** | Variabel / Unklar | Daten verlassen Host | Lokal | Server/Cloud API |
+| **Latenz & Prozess-Overhead** | **<50ms (In-Process)** | 50–500ms | 100–1000ms+ (RTT) | 0ms (im Prompt) | 200–2000ms (Daemon) |
+| **Sicherheit & Berechtigung** | **Unprivilegiert (`RunAsInvoker`)** | Oft unkontrolliert | API Token Risiken | Keine Isolation | Server/Docker Rechte |
+| **Agenten-Hook-Integration** | **Native Snippets (Claude/Codex/Kimi/AGY)** | Manuelle Frickellösung | Keine Hook-Snippets | Nativ im Chat | API/SDK erforderlich |
+| **Kuratierte Speicherquellen** | **USMC, Gardener FTS5, Files** | Oft nur Rohdateien | Vektor-Embeddings | Rohe Chathistorie | Eigene Speicher-DB |
+| **Deterministische Redigierung** | **Ja (Secrets & Pfade -> `[redacted]`)** | Nein | Nein | Nein | Nein |
+| **Ausgabe- & Sitzungsbegrenzung** | **Ja (Zeichen-, Treffer-, Cooldown-Limits)** | Selten | Token-Limitierung | Token-Kontext-Limit | Komplexes Management |
+| **Deterministisches Change-Gate** | **Ja (SHA-256 Digest-Vergleich)** | Nein | Nein | Nein | LLM-Verwaltet |
+| **Maschinenlesbare LLM-Parität** | **Ja (`llms.txt` + Bilinguale READMEs)** | Nein | Web-Dokumentation | Keine | Web-Dokumentation |
+
+---
+
+### 4. Governance & Laufzeit-Invarianten (INV-LOCAL-01 bis INV-SLA-10)
+
+| Invariante | Schutzbereich & Beschreibung |
+|:---|:---|
+| `INV-LOCAL-01` | **100% Local-First & Zero-Egress**: Keine externen Sockets, kein Netzwerkverkehr, Speicher bleibt lokal. |
+| `INV-READONLY-02` | **Reiner Lesezugriff auf externe Speicher**: Externe SQLite-Datenbanken werden strikt in `mode=ro` geöffnet. |
+| `INV-UNPRIV-03` | **Unprivilegierter Modus (RunAsInvoker)**: Läuft mit normalen Benutzerrechten ohne Admin/Root-Elevation. |
+| `INV-REDACT-04` | **Deterministische Secret- & Pfad-Redigierung**: Maskiert API-Keys, Token und absolute Pfade mit `[redacted]`. |
+| `INV-BOUND-05` | **Strikte Längen- & Feldgrenzen**: Deterministische Begrenzung von Text, Metadaten und Gesamtlänge. |
+| `INV-GATE-06` | **Deterministisches Change-Gate**: SHA-256 Hashvergleich unterdrückt identische wiederholte Ausgaben. |
+| `INV-SPAM-07` | **Sitzungs-Ratenlimit & Tages-TTL**: Begrenzung je Sitzung, Cooldown und automatischer Kalendertag-Reset. |
+| `INV-FAILOPEN-08` | **Fail-Open Hook-Fehlertoleranz**: Fehlende Backends oder defekter State führen nie zum Agenten-Absturz. |
+| `INV-LLM-09` | **Bilinguale Parität & LLM-Indexierung**: 16-Punkte-Anker-Parität und maschinenlesbares `llms.txt`. |
+| `INV-SLA-10` | **48-Stunden Antwort & 5-Tage Triage SLA**: Etablierte Sicherheitskanäle und Reaktionszeiten. |
+

@@ -82,7 +82,7 @@ _STOPWORDS = frozenset(
         "zur",
         # Englisch
         "the", "and", "for", "with", "this", "that", "from", "have",
-        "has", "are", "was", "were", "not", "but", "all", "can", "you",
+        "has", "are", "were", "not", "but", "all", "can", "you",
         "your", "its", "our", "their", "them", "they", "what", "which",
         "when", "where", "how", "then", "there", "here", "into", "only",
         "very", "just", "does", "already",
@@ -286,7 +286,7 @@ class UsmcBackend:
         for row in rows:
             haystack = f"{row['key']}\n{row['value']}"
             lowered = haystack.lower()
-            quality, matched = _match_quality(lowered, terms)
+            quality, _matched = _match_quality(lowered, terms)
             if quality <= 0:
                 continue
             confidence = row["confidence"] if row["confidence"] is not None else 0.0

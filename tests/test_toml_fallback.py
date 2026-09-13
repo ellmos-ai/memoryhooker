@@ -1,6 +1,5 @@
 from memoryhooker._toml import loads, loads_fallback
 
-
 SAMPLE = """
 # Kommentar
 [mode]
