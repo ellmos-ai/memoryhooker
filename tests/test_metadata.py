@@ -1,6 +1,17 @@
 import json
 from pathlib import Path
-import tomllib
+
+import pytest
+
+# ``tomllib`` ist erst ab Python 3.11 Stdlib, das Projekt bleibt aber bei
+# ``requires-python = ">=3.10"``. Ohne diesen Skip bricht schon das Einsammeln
+# der Testdatei ab und reisst die ganze 3.10-Zeile der CI-Matrix mit.
+# Der paketeigene Fallback aus ``memoryhooker/_toml.py`` hilft hier NICHT: er
+# deckt bewusst nur das Teilmengen-Schema der eigenen Config ab und scheitert
+# an der Inline-Tabelle in ``authors`` von pyproject.toml. Eine Testabhaengigkeit
+# auf ``tomli`` waere die Alternative -- sie brachte aber nichts, weil die
+# Versionsparitaet auf 3.11/3.12/3.13 ohnehin geprueft wird.
+tomllib = pytest.importorskip("tomllib", reason="stdlib erst ab Python 3.11")
 
 import memoryhooker
 
