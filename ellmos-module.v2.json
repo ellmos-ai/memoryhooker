@@ -5,7 +5,7 @@
   "category": "control",
   "kind": "library",
   "status": "staging",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "visibility": "public",
   "provides": [
     "memory.hook",
@@ -32,8 +32,9 @@
     ]
   },
   "source_of_truth": {
-    "type": "local-directory",
-    "path": "."
+    "type": "git-repository",
+    "path": ".",
+    "repository": "https://github.com/ellmos-ai/memoryhooker"
   },
   "adapters": [],
   "repo_aliases": [

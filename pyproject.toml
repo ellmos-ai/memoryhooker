@@ -4,18 +4,41 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "memoryhooker"
-version = "0.3.0"
+version = "0.3.2"
 description = "Local-first memory reminders and retrieval for coding-agent hooks."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "ellmos-ai contributors" }]
-keywords = ["memory", "llm-agent", "hook", "gardener", "fts5", "claude-code", "offline-first"]
+keywords = ["memory", "llm-agent", "hook", "gardener", "fts5", "claude-code", "offline-first", "usmc"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/ellmos-ai/memoryhooker"
+Repository = "https://github.com/ellmos-ai/memoryhooker"
+Documentation = "https://github.com/ellmos-ai/memoryhooker#readme"
+Issues = "https://github.com/ellmos-ai/memoryhooker/issues"
+Changelog = "https://github.com/ellmos-ai/memoryhooker/blob/main/CHANGELOG.md"
+Security = "https://github.com/ellmos-ai/memoryhooker/blob/main/SECURITY.md"
+"Parent Organization" = "https://github.com/ellmos-ai"
+"Umbrella Ecosystem" = "https://github.com/open-bricks"
+
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+test = ["pytest>=7"]
+dev = ["pytest>=7", "ruff>=0.4.0"]
 
 [project.scripts]
 memoryhooker = "memoryhooker.cli:main"
@@ -24,6 +47,7 @@ memoryhooker = "memoryhooker.cli:main"
 include = ["memoryhooker*"]
 
 [tool.pytest.ini_options]
+addopts = "-ra -v"
 pythonpath = "."
 testpaths = ["tests"]
 
