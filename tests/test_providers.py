@@ -125,3 +125,51 @@ def test_provider_self_test_invariants():
     assert res["ok"] is True
 
 
+def test_providers_inherit_from_hook_master_bases():
+    from hook_master.providers.agy import AgyProvider as BaseAgy
+    from hook_master.providers.claude import ClaudeProvider as BaseClaude
+    from hook_master.providers.codex import CodexProvider as BaseCodex
+    from hook_master.providers.git import GitProvider as BaseGit
+    from hook_master.providers.kimi import KimiProvider as BaseKimi
+    from hook_master.providers.manual import ManualProvider as BaseManual
+
+    assert issubclass(ClaudeProvider, BaseClaude)
+    assert issubclass(CodexProvider, BaseCodex)
+    assert issubclass(AgyProvider, BaseAgy)
+    assert issubclass(KimiProvider, BaseKimi)
+    assert issubclass(GitProvider, BaseGit)
+    assert issubclass(ManualProvider, BaseManual)
+
+
+def test_hook_snippets_delegate_to_hook_master_bases():
+    from hook_master.providers.claude import ClaudeProvider as BaseClaude
+    from hook_master.providers.codex import CodexProvider as BaseCodex
+
+    claude = ClaudeProvider()
+    base_claude = BaseClaude()
+    expected_claude = base_claude.hook_snippet(module="memoryhooker", events=claude.events, provider_arg=False)
+    assert claude.hook_snippet() == expected_claude
+
+    codex = CodexProvider()
+    base_codex = BaseCodex()
+    expected_codex = base_codex.hook_snippet(
+        module="memoryhooker",
+        events=codex.events,
+        timeout=10,
+        status_prefix="MemoryHooker",
+        provider_arg=False,
+    )
+    assert codex.hook_snippet() == expected_codex
+
+
+def test_invariants_imported_from_hook_master():
+    import hook_master.providers.invariants as hm_invariants
+
+    import memoryhooker.providers.invariants as mh_invariants
+
+    assert mh_invariants.validate_interpreter is hm_invariants.validate_interpreter
+    assert mh_invariants.validate_timeout is hm_invariants.validate_timeout
+    assert mh_invariants.run_self_test is hm_invariants.run_self_test
+
+
+

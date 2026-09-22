@@ -12,12 +12,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .invariants import validate_interpreter
-
-try:
-    from hook_master.providers.agy import AgyProvider as BaseAgyProvider
-except ImportError:
-    from .base import BaseProvider as BaseAgyProvider
+from hook_master.providers.agy import AgyProvider as BaseAgyProvider
 
 FORBIDDEN_EVENT = "PreToolUse"
 
@@ -26,13 +21,10 @@ class AgyProvider(BaseAgyProvider):
     name = "agy"
     events = ("PreInvocation", "PostToolUse")
 
-    def is_available(self) -> bool:
-        return True
-
     def hook_snippet(
         self, python_executable: str = "python", module: str = "memoryhooker"
     ) -> dict[str, Any]:
-        validate_interpreter(python_executable)
+        self.validate_command(python_executable)
         session_start_cmd = f"{python_executable} -m {module} hook-run SessionStart"
         user_prompt_cmd = f"{python_executable} -m {module} hook-run UserPromptSubmit"
         record_search_cmd = f"{python_executable} -m {module} record-search"
@@ -40,14 +32,14 @@ class AgyProvider(BaseAgyProvider):
         snippet = {
             "hooks": {
                 "PreInvocation": [
-                    {"type": "command", "command": session_start_cmd},
-                    {"type": "command", "command": user_prompt_cmd},
+                    self.format_hook(session_start_cmd),
+                    self.format_hook(user_prompt_cmd),
                 ],
                 "PostToolUse": [
-                    {
-                        "matcher": "grep_search|view_file|list_dir|search_web",
-                        "hooks": [{"type": "command", "command": record_search_cmd}],
-                    }
+                    self.format_hook(
+                        record_search_cmd,
+                        matcher="grep_search|view_file|list_dir|search_web",
+                    )
                 ],
             }
         }
@@ -56,3 +48,6 @@ class AgyProvider(BaseAgyProvider):
             "AgyProvider darf niemals PreToolUse-Hooks erzeugen (README-Kernregel)."
         )
         return snippet
+
+
+__all__ = ["FORBIDDEN_EVENT", "AgyProvider"]
