@@ -10,17 +10,29 @@ und PostToolUse (für record-search Zähler).
 
 from __future__ import annotations
 
+from typing import Any
+
+from .invariants import validate_interpreter
+
+try:
+    from hook_master.providers.agy import AgyProvider as BaseAgyProvider
+except ImportError:
+    from .base import BaseProvider as BaseAgyProvider
+
 FORBIDDEN_EVENT = "PreToolUse"
 
 
-class AgyProvider:
+class AgyProvider(BaseAgyProvider):
     name = "agy"
     events = ("PreInvocation", "PostToolUse")
 
     def is_available(self) -> bool:
         return True
 
-    def hook_snippet(self, python_executable: str = "python", module: str = "memoryhooker") -> dict:
+    def hook_snippet(
+        self, python_executable: str = "python", module: str = "memoryhooker"
+    ) -> dict[str, Any]:
+        validate_interpreter(python_executable)
         session_start_cmd = f"{python_executable} -m {module} hook-run SessionStart"
         user_prompt_cmd = f"{python_executable} -m {module} hook-run UserPromptSubmit"
         record_search_cmd = f"{python_executable} -m {module} record-search"
@@ -29,14 +41,14 @@ class AgyProvider:
             "hooks": {
                 "PreInvocation": [
                     {"type": "command", "command": session_start_cmd},
-                    {"type": "command", "command": user_prompt_cmd}
+                    {"type": "command", "command": user_prompt_cmd},
                 ],
                 "PostToolUse": [
                     {
                         "matcher": "grep_search|view_file|list_dir|search_web",
-                        "hooks": [{"type": "command", "command": record_search_cmd}]
+                        "hooks": [{"type": "command", "command": record_search_cmd}],
                     }
-                ]
+                ],
             }
         }
 

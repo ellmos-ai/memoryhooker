@@ -11,25 +11,34 @@ niemals ``PreToolUse``.
 
 from __future__ import annotations
 
+from typing import Any
+
+from .invariants import validate_interpreter
+
+try:
+    from hook_master.providers.claude import ClaudeProvider as BaseClaudeProvider
+except ImportError:
+    from .base import BaseProvider as BaseClaudeProvider
+
 FORBIDDEN_EVENT = "PreToolUse"
 
 
-class ClaudeProvider:
+class ClaudeProvider(BaseClaudeProvider):
     name = "claude"
     events = ("SessionStart", "UserPromptSubmit")
 
     def is_available(self) -> bool:
-        # Kein Laufzeit-Check moeglich (keine settings.json-Introspektion aus
-        # dem Modul heraus vorgesehen) -- claude ist der Default-Provider,
-        # fuer den dieses Modul in erster Linie gebaut ist.
         return True
 
-    def hook_snippet(self, python_executable: str = "python", module: str = "memoryhooker") -> dict:
+    def hook_snippet(
+        self, python_executable: str = "python", module: str = "memoryhooker"
+    ) -> dict[str, Any]:
         """Baut den Hook-Konfigurationsblock fuer ``settings.json``.
 
         Der Aufrufer entscheidet, ob/wie er das in eine echte Config
         einmischt -- dieses Modul tut das nicht selbst.
         """
+        validate_interpreter(python_executable)
         session_start_cmd = f"{python_executable} -m {module} hook-run SessionStart"
         user_prompt_cmd = f"{python_executable} -m {module} hook-run UserPromptSubmit"
 

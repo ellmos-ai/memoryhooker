@@ -96,3 +96,32 @@ def test_resolve_provider_picks_kimi_when_ordered_and_available():
         pytest.skip("keine ~/.kimi-code/config.toml auf diesem Host")
     config = ProvidersConfig(order=["kimi", "manual"])
     assert resolve_provider(config).name == "kimi"
+
+
+def test_provider_rejects_zero_byte_store_alias():
+    from memoryhooker.providers.invariants import validate_interpreter
+
+    with pytest.raises(ValueError, match=r"0-Byte|0-byte|Store|Alias"):
+        validate_interpreter("python3")
+
+
+def test_provider_timeout_must_be_positive():
+    from memoryhooker.providers.invariants import validate_timeout
+
+    with pytest.raises(ValueError, match=r"positiv|> 0"):
+        validate_timeout(0)
+    with pytest.raises(ValueError, match=r"positiv|> 0"):
+        validate_timeout(-5)
+    assert validate_timeout(10) == 10
+
+
+def test_provider_self_test_invariants():
+    from memoryhooker.providers.invariants import run_self_test
+
+    res = run_self_test()
+    assert res["interpreter_valid"] is True
+    assert res["timeout_kills"] is True
+    assert res["alias_detection_works"] is True
+    assert res["ok"] is True
+
+

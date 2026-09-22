@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from .base import UnimplementedProvider
+try:
+    from hook_master.providers.git import GitProvider as BaseGitProvider
+except ImportError:
+    from .base import UnimplementedProvider as BaseGitProvider
 
 
-class GitProvider(UnimplementedProvider):
+class GitProvider(BaseGitProvider):
     """Universeller Git-Hook-Fallback (``pre-commit``, ``post-checkout``, ...).
 
     Laut README der "kleinste gemeinsame Nenner aller Agenten" -- fuer das

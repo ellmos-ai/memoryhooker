@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
+
+from .invariants import validate_interpreter, validate_timeout
+
+try:
+    from hook_master.providers.kimi import KimiProvider as BaseKimiProvider
+except ImportError:
+    from .base import BaseProvider as BaseKimiProvider
 
 FORBIDDEN_EVENT = "PreToolUse"
 
 
-class KimiProvider:
+class KimiProvider(BaseKimiProvider):
     """Kimi-Code-CLI-Provider fuer ``~/.kimi-code/config.toml`` (``[[hooks]]``).
 
     Der Adapter folgt dem dokumentierten stdin/stdout-Vertrag des Hosts:
@@ -27,6 +35,7 @@ class KimiProvider:
 
     name = "kimi"
     events = ("UserPromptSubmit",)
+    default_timeout = 15
 
     def is_available(self) -> bool:
         # Existenz der CLI-Config ist das belegbare Minimum -- KEIN Nachweis
@@ -36,7 +45,7 @@ class KimiProvider:
 
     def hook_snippet(
         self, python_executable: str = "python", module: str = "memoryhooker"
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Baustein fuer ``[[hooks]]`` in config.toml (TOML-Array-of-Tables).
 
         Wie bei den anderen Providern schreibt das Modul NIEMALS selbst in
@@ -44,12 +53,14 @@ class KimiProvider:
         Schritt. Config- und State-Pfade (``--config``/``--state-dir``)
         ergaenzt der Installierende.
         """
+        validate_interpreter(python_executable)
+        timeout = validate_timeout(getattr(self, "default_timeout", 15))
         snippet = {
             "hooks": [
                 {
                     "event": "UserPromptSubmit",
                     "command": f"{python_executable} -m {module} hook-run --format plain UserPromptSubmit",
-                    "timeout": 15,
+                    "timeout": timeout,
                 }
             ]
         }
