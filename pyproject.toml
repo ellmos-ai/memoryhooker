@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "hook-master @ git+https://github.com/ellmos-ai/hook-master.git@a798494",
+    "hook-master @ git+https://github.com/ellmos-ai/hook-master.git@f9dcea5",
 ]
 
 [project.urls]
