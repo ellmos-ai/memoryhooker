@@ -11,39 +11,31 @@ niemals ``PreToolUse``.
 
 from __future__ import annotations
 
+from typing import Any
+
+from hook_master.providers.claude import ClaudeProvider as BaseClaudeProvider
+
 FORBIDDEN_EVENT = "PreToolUse"
 
 
-class ClaudeProvider:
+class ClaudeProvider(BaseClaudeProvider):
     name = "claude"
     events = ("SessionStart", "UserPromptSubmit")
 
-    def is_available(self) -> bool:
-        # Kein Laufzeit-Check moeglich (keine settings.json-Introspektion aus
-        # dem Modul heraus vorgesehen) -- claude ist der Default-Provider,
-        # fuer den dieses Modul in erster Linie gebaut ist.
-        return True
-
-    def hook_snippet(self, python_executable: str = "python", module: str = "memoryhooker") -> dict:
-        """Baut den Hook-Konfigurationsblock fuer ``settings.json``.
-
-        Der Aufrufer entscheidet, ob/wie er das in eine echte Config
-        einmischt -- dieses Modul tut das nicht selbst.
-        """
-        session_start_cmd = f"{python_executable} -m {module} hook-run SessionStart"
-        user_prompt_cmd = f"{python_executable} -m {module} hook-run UserPromptSubmit"
-
-        snippet = {
-            "hooks": {
-                "SessionStart": [
-                    {"hooks": [{"type": "command", "command": session_start_cmd}]}
-                ],
-                "UserPromptSubmit": [
-                    {"hooks": [{"type": "command", "command": user_prompt_cmd}]}
-                ],
-            }
-        }
+    def hook_snippet(
+        self, python_executable: str = "python", module: str = "memoryhooker"
+    ) -> dict[str, Any]:
+        """Baut den Hook-Konfigurationsblock fuer ``settings.json`` ueber super()."""
+        snippet = super().hook_snippet(
+            python_executable=python_executable,
+            module=module,
+            events=self.events,
+            provider_arg=False,
+        )
         assert FORBIDDEN_EVENT not in snippet["hooks"], (
             "ClaudeProvider darf niemals PreToolUse-Hooks erzeugen (README-Kernregel)."
         )
         return snippet
+
+
+__all__ = ["FORBIDDEN_EVENT", "ClaudeProvider"]

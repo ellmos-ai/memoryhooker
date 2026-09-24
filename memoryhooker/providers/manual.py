@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from hook_master.providers.manual import ManualProvider as BaseManualProvider
 
-class ManualProvider:
+
+class ManualProvider(BaseManualProvider):
     """Kein Hook -- das Modul stellt nur eine CLI bereit, die der Agent
     selbst aufruft (``python -m memoryhooker check "<prompt>"``).
 
@@ -11,5 +13,5 @@ class ManualProvider:
 
     name = "manual"
 
-    def is_available(self) -> bool:
-        return True
+
+__all__ = ["ManualProvider"]

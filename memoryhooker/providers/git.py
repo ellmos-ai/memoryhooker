@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from .base import UnimplementedProvider
+from hook_master.providers.git import GitProvider as BaseGitProvider
 
 
-class GitProvider(UnimplementedProvider):
+class GitProvider(BaseGitProvider):
     """Universeller Git-Hook-Fallback (``pre-commit``, ``post-checkout``, ...).
 
     Laut README der "kleinste gemeinsame Nenner aller Agenten" -- fuer das
@@ -14,3 +14,6 @@ class GitProvider(UnimplementedProvider):
 
     name = "git"
     reason = "Git-Hook-Installation ist fuer v0.1 bewusst nicht gebaut (siehe ROADMAP v0.2+)."
+
+
+__all__ = ["GitProvider"]

@@ -8,6 +8,16 @@ liefert den ersten verfuegbaren.
 
 from __future__ import annotations
 
+from typing import cast
+
+try:
+    from hook_master.providers import resolve_provider as base_resolve_provider
+except ImportError as err:
+    raise ImportError(
+        "hook_master is required for memoryhooker provider resolution. "
+        "Please ensure 'hook-master' is installed (e.g. from https://github.com/ellmos-ai/hook-master)."
+    ) from err
+
 from ..config import ProvidersConfig
 from .agy import AgyProvider
 from .base import Provider, UnimplementedProvider
@@ -43,11 +53,6 @@ __all__ = [
 def resolve_provider(config: ProvidersConfig) -> Provider:
     """Erster verfuegbarer Provider in ``config.order`` gewinnt (Fallback-Kette).
 
-    ``manual`` ist immer verfuegbar und damit der garantierte Endpunkt der
-    Kette -- das Modul kann so nie ganz ohne Provider dastehen.
+    Delegiert an hook_master.providers.resolve_provider.
     """
-    for name in config.order:
-        provider = PROVIDER_REGISTRY.get(name)
-        if provider is not None and provider.is_available():
-            return provider
-    return PROVIDER_REGISTRY["manual"]
+    return cast(Provider, base_resolve_provider(config.order, PROVIDER_REGISTRY))

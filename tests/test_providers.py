@@ -96,3 +96,87 @@ def test_resolve_provider_picks_kimi_when_ordered_and_available():
         pytest.skip("keine ~/.kimi-code/config.toml auf diesem Host")
     config = ProvidersConfig(order=["kimi", "manual"])
     assert resolve_provider(config).name == "kimi"
+
+
+def test_provider_rejects_zero_byte_store_alias(tmp_path):
+    from memoryhooker.providers.invariants import validate_interpreter
+
+    # Synthetischer 0-Byte-Alias-Kandidat statt "python3": "python3" ist auf
+    # POSIX ein legitimer, realer Interpreter (T-20260921-750493182, Runde 3;
+    # siehe hook-master#5) -- validate_interpreter() wirft dort korrekt KEINE
+    # Exception dafuer. Der 0-Byte-Groessencheck ist dagegen auf jeder
+    # Plattform identisch und damit die richtige, plattformunabhaengige Sonde.
+    fake_alias = tmp_path / "mock_alias.exe"
+    fake_alias.write_bytes(b"")
+    with pytest.raises(ValueError, match=r"0-Byte|0-byte|Store|Alias"):
+        validate_interpreter(fake_alias)
+
+
+def test_provider_timeout_must_be_positive():
+    from memoryhooker.providers.invariants import validate_timeout
+
+    with pytest.raises(ValueError, match=r"positiv|> 0"):
+        validate_timeout(0)
+    with pytest.raises(ValueError, match=r"positiv|> 0"):
+        validate_timeout(-5)
+    assert validate_timeout(10) == 10
+
+
+def test_provider_self_test_invariants():
+    from memoryhooker.providers.invariants import run_self_test
+
+    res = run_self_test()
+    assert res["interpreter_valid"] is True
+    assert res["timeout_kills"] is True
+    assert res["alias_detection_works"] is True
+    assert res["ok"] is True
+
+
+def test_providers_inherit_from_hook_master_bases():
+    from hook_master.providers.agy import AgyProvider as BaseAgy
+    from hook_master.providers.claude import ClaudeProvider as BaseClaude
+    from hook_master.providers.codex import CodexProvider as BaseCodex
+    from hook_master.providers.git import GitProvider as BaseGit
+    from hook_master.providers.kimi import KimiProvider as BaseKimi
+    from hook_master.providers.manual import ManualProvider as BaseManual
+
+    assert issubclass(ClaudeProvider, BaseClaude)
+    assert issubclass(CodexProvider, BaseCodex)
+    assert issubclass(AgyProvider, BaseAgy)
+    assert issubclass(KimiProvider, BaseKimi)
+    assert issubclass(GitProvider, BaseGit)
+    assert issubclass(ManualProvider, BaseManual)
+
+
+def test_hook_snippets_delegate_to_hook_master_bases():
+    from hook_master.providers.claude import ClaudeProvider as BaseClaude
+    from hook_master.providers.codex import CodexProvider as BaseCodex
+
+    claude = ClaudeProvider()
+    base_claude = BaseClaude()
+    expected_claude = base_claude.hook_snippet(module="memoryhooker", events=claude.events, provider_arg=False)
+    assert claude.hook_snippet() == expected_claude
+
+    codex = CodexProvider()
+    base_codex = BaseCodex()
+    expected_codex = base_codex.hook_snippet(
+        module="memoryhooker",
+        events=codex.events,
+        timeout=10,
+        status_prefix="MemoryHooker",
+        provider_arg=False,
+    )
+    assert codex.hook_snippet() == expected_codex
+
+
+def test_invariants_imported_from_hook_master():
+    import hook_master.providers.invariants as hm_invariants
+
+    import memoryhooker.providers.invariants as mh_invariants
+
+    assert mh_invariants.validate_interpreter is hm_invariants.validate_interpreter
+    assert mh_invariants.validate_timeout is hm_invariants.validate_timeout
+    assert mh_invariants.run_self_test is hm_invariants.run_self_test
+
+
+

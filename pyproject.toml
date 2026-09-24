@@ -24,7 +24,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = []
+dependencies = [
+    "hook-master @ git+https://github.com/ellmos-ai/hook-master.git@f9dcea5",
+]
 
 [project.urls]
 Homepage = "https://github.com/ellmos-ai/memoryhooker"
