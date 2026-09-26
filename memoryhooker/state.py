@@ -61,6 +61,8 @@ class SessionState:
     last_gate_digest: str | None = None
     # Letzte Injektion je Trigger-Quelle (triggers.py), Unix-Zeit.
     trigger_last_ts: dict[str, float] = field(default_factory=dict)
+    # Bereits gefeuerte Regeln der once_per_session-Quellen ("source:phrase|...").
+    trigger_once: list[str] = field(default_factory=list)
 
     @classmethod
     def load(cls, path: Path) -> SessionState:
@@ -87,6 +89,8 @@ class SessionState:
             data.pop("last_gate_digest")
         if not self.trigger_last_ts:
             data.pop("trigger_last_ts")
+        if not self.trigger_once:
+            data.pop("trigger_once")
         path.write_text(json.dumps(data), encoding="utf-8")
 
     def record_search(self) -> None:

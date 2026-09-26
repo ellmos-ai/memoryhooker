@@ -136,3 +136,44 @@ def test_hook_run_emits_trigger_hint(tmp_path, capsys, monkeypatch):
                  "hook-run", "UserPromptSubmit"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["additionalContext"] == "[STRATEGIE] ueberspringen"
+
+
+def test_group_gives_one_hint_in_id_order_with_prefix(tmp_path):
+    _, conn = _db(tmp_path, [
+        ("code", "tool-hint", "tool"),
+        ("code review", "manual-hint", "manual"),
+        ("fehler", "[STRATEGIE] s", "strategy"),
+    ])
+    config = Config(triggers=TriggersConfig(
+        sources=["strategy", "context"], groups={"context": ["manual", "tool"]},
+        prefixes={"context": "[KONTEXT] "}))
+    fired = []
+    hints = evaluate_triggers("code review fehler", config, _Backend(conn), SessionState(),
+                              now=0, fired=fired)
+    assert hints == ["[STRATEGIE] s", "[KONTEXT] tool-hint"]
+    assert [(r.source, r.rule_id) for r in fired] == [("strategy", 3), ("tool", 1)]
+
+
+def test_once_per_session_falls_through_to_next_rule(tmp_path):
+    _, conn = _db(tmp_path, [("wartung", "Thema Wartung", "theme"), ("wartung|pflege", "manual", "manual")])
+    config = Config(triggers=TriggersConfig(
+        sources=["context"], groups={"context": ["theme", "manual"]},
+        cooldowns={"context": 0}, once_per_session=["theme"]))
+    state, backend = SessionState(), _Backend(conn)
+    assert evaluate_triggers("wartung", config, backend, state, now=0) == ["Thema Wartung"]
+    assert evaluate_triggers("wartung", config, backend, state, now=1) == ["manual"]
+    assert state.trigger_once == ["theme:wartung"]
+
+
+def test_config_parses_groups_prefixes_once(tmp_path):
+    path = tmp_path / "memoryhooker.toml"
+    path.write_text(
+        '[triggers]\nsources = ["context"]\nonce_per_session = ["theme"]\n'
+        '[triggers.groups]\ncontext = ["manual", "theme"]\n'
+        '[triggers.prefixes]\ncontext = "[KONTEXT] "\n',
+        encoding="utf-8",
+    )
+    cfg = load_config(path).triggers
+    assert cfg.table_sources("context") == ["manual", "theme"]
+    assert cfg.table_sources("strategy") == ["strategy"]
+    assert (cfg.prefixes, cfg.once_per_session) == ({"context": "[KONTEXT] "}, ["theme"])

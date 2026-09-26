@@ -37,6 +37,11 @@ class TriggerRule:
     phrases: tuple[str, ...]
     hint: str
     source: str
+    rule_id: int | None = None
+
+    @property
+    def key(self) -> str:
+        return f"{self.source}:{'|'.join(self.phrases)}"
 
     def matches(self, lowered_prompt: str) -> bool:
         return any(phrase in lowered_prompt for phrase in self.phrases)
@@ -48,7 +53,7 @@ def read_context_triggers(
     agent_id: str = "default",
     now: datetime | None = None,
 ) -> list[TriggerRule]:
-    """Liest aktive Regeln der genannten Quellen, geordnet nach Quelle, dann ``id``.
+    """Liest aktive Regeln der genannten Quellen, geordnet nach ``id``.
 
     Leseregel: ``is_active = 1``, ``status <> 'blocked'``, nicht abgelaufen,
     ``agent_id`` gleich dem eigenen oder ``'default'``. Fehlt die Tabelle,
@@ -61,7 +66,7 @@ def read_context_triggers(
     try:
         rows = conn.execute(
             f"""
-            SELECT source, trigger_phrase, hint_text FROM context_triggers
+            SELECT id, source, trigger_phrase, hint_text FROM context_triggers
             WHERE source IN ({marks})
               AND is_active = 1
               AND COALESCE(status, 'unknown') <> 'blocked'
@@ -73,13 +78,12 @@ def read_context_triggers(
         ).fetchall()
     except sqlite3.Error:
         return []
-    order = {source: index for index, source in enumerate(sources)}
     rules = []
-    for source, phrase, hint in rows:
+    for rule_id, source, phrase, hint in rows:
         phrases = tuple(p.strip().lower() for p in str(phrase or "").split("|") if p.strip())
         if phrases and hint:
-            rules.append(TriggerRule(phrases=phrases, hint=str(hint), source=str(source)))
-    rules.sort(key=lambda rule: order[rule.source])  # stabil: id-Reihenfolge bleibt
+            rules.append(TriggerRule(phrases=phrases, hint=str(hint), source=str(source),
+                                     rule_id=rule_id))
     return rules
 
 
@@ -106,29 +110,36 @@ def evaluate_triggers(
     state: SessionState,
     *,
     now: float | None = None,
+    fired: list[TriggerRule] | None = None,
 ) -> list[str]:
-    """Hoechstens ein Hinweis je konfigurierter Quelle, mit Cooldown je Quelle."""
-    sources = config.triggers.sources
-    if not sources or not prompt:
+    """Hoechstens ein Hinweis je Injektor-Schluessel, mit Cooldown je Schluessel.
+
+    Je Schluessel gewinnt die erste passende Regel in ``id``-Reihenfolge ueber
+    alle seine Tabellenquellen. ``fired`` sammelt auf Wunsch die Regeln, die
+    einen Hinweis geliefert haben (z. B. fuer Nutzungszaehler des Aufrufers).
+    """
+    cfg = config.triggers
+    if not cfg.sources or not prompt:
         return []
     now = time.time() if now is None else now
-    ready = [
-        source for source in sources
-        if now - state.trigger_last_ts.get(source, float("-inf"))
-        >= config.triggers.cooldowns.get(source, DEFAULT_TRIGGER_COOLDOWN_SECONDS)
-    ]
-    if not ready:
-        return []
     lowered = prompt.lower()
     hints = []
-    done: set[str] = set()
-    for rule in backend_triggers(backend, ready, config.triggers.agent_id):
-        if rule.source in done or not rule.matches(lowered):
+    for key in cfg.sources:
+        cooldown = cfg.cooldowns.get(key, DEFAULT_TRIGGER_COOLDOWN_SECONDS)
+        if now - state.trigger_last_ts.get(key, float("-inf")) < cooldown:
             continue
-        hint = sanitize_message(rule.hint, config.output)
-        if not hint:
-            continue
-        done.add(rule.source)
-        hints.append(hint)
-        state.trigger_last_ts[rule.source] = now
+        for rule in backend_triggers(backend, cfg.table_sources(key), cfg.agent_id):
+            once = rule.source in cfg.once_per_session
+            if not rule.matches(lowered) or (once and rule.key in state.trigger_once):
+                continue
+            hint = sanitize_message(cfg.prefixes.get(key, "") + rule.hint, config.output)
+            if not hint:
+                continue
+            if once:
+                state.trigger_once.append(rule.key)
+            state.trigger_last_ts[key] = now
+            hints.append(hint)
+            if fired is not None:
+                fired.append(rule)
+            break
     return hints

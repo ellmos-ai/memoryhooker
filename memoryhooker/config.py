@@ -53,11 +53,24 @@ class ClueConfig:
 
 @dataclass
 class TriggersConfig:
-    """Trigger-Injektor (siehe ``triggers.py``); leere ``sources`` = aus."""
+    """Trigger-Injektor (siehe ``triggers.py``); leere ``sources`` = aus.
+
+    Ein Eintrag in ``sources`` ist ein Injektor-Schluessel. Ohne Eintrag in
+    ``groups`` ist er zugleich der ``source``-Wert in der Tabelle; mit Eintrag
+    buendelt er mehrere Tabellenquellen zu einem Injektor (ein Hinweis je
+    Prompt, ein Cooldown).
+    """
 
     sources: list[str] = field(default_factory=list)
     cooldowns: dict[str, int] = field(default_factory=dict)
     agent_id: str = "default"
+    groups: dict[str, list[str]] = field(default_factory=dict)
+    prefixes: dict[str, str] = field(default_factory=dict)
+    # Tabellenquellen, deren einzelne Regel je Sitzung nur einmal feuert.
+    once_per_session: list[str] = field(default_factory=list)
+
+    def table_sources(self, key: str) -> list[str]:
+        return list(self.groups.get(key, [key]))
 
 
 @dataclass
@@ -250,6 +263,9 @@ def _config_from_dict(data: dict) -> Config:
         sources=[str(source) for source in triggers_data.get("sources", [])],
         cooldowns=dict(triggers_data.get("cooldowns", {})),
         agent_id=str(triggers_data.get("agent_id", TriggersConfig.agent_id)),
+        groups={str(k): [str(x) for x in v] for k, v in triggers_data.get("groups", {}).items()},
+        prefixes={str(k): str(v) for k, v in triggers_data.get("prefixes", {}).items()},
+        once_per_session=[str(x) for x in triggers_data.get("once_per_session", [])],
     )
 
     providers_data = data.get("providers", {})
