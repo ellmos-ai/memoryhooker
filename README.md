@@ -280,8 +280,13 @@ Independent of the active mode, `[triggers]` emits curated keyword hints stored 
 [triggers]
 sources = ["strategy"]   # context_triggers.source values; empty = off
 agent_id = "default"     # rows of this agent plus 'default'
+once_per_session = []    # e.g. ["theme"]: a rule of these sources fires once per session
 [triggers.cooldowns]
 strategy = 120           # seconds; default 60
+[triggers.groups]        # optional: one injector key over several table sources
+context = ["manual", "theme", "workflow"]   # one hint per prompt, first match by id
+[triggers.prefixes]
+context = "[KONTEXT] "
 ```
 
 ---
