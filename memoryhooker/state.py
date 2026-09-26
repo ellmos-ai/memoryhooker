@@ -59,6 +59,8 @@ class SessionState:
     # Privacy boundary for the opt-in change gate. This is only a SHA-256 of
     # already sanitized selection data; raw hits, prompts and paths never enter state.
     last_gate_digest: str | None = None
+    # Letzte Injektion je Trigger-Quelle (triggers.py), Unix-Zeit.
+    trigger_last_ts: dict[str, float] = field(default_factory=dict)
 
     @classmethod
     def load(cls, path: Path) -> SessionState:
@@ -83,6 +85,8 @@ class SessionState:
         # Preserve the byte-level legacy shape while the opt-in gate is off.
         if self.last_gate_digest is None:
             data.pop("last_gate_digest")
+        if not self.trigger_last_ts:
+            data.pop("trigger_last_ts")
         path.write_text(json.dumps(data), encoding="utf-8")
 
     def record_search(self) -> None:

@@ -52,6 +52,15 @@ class ClueConfig:
 
 
 @dataclass
+class TriggersConfig:
+    """Trigger-Injektor (siehe ``triggers.py``); leere ``sources`` = aus."""
+
+    sources: list[str] = field(default_factory=list)
+    cooldowns: dict[str, int] = field(default_factory=dict)
+    agent_id: str = "default"
+
+
+@dataclass
 class ProvidersConfig:
     order: list[str] = field(
         default_factory=lambda: ["claude", "codex", "kimi", "agy", "git", "manual"]
@@ -121,6 +130,7 @@ class Config:
     gate: GateConfig = field(default_factory=GateConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
     clue: ClueConfig = field(default_factory=ClueConfig)
+    triggers: TriggersConfig = field(default_factory=TriggersConfig)
     providers: ProvidersConfig = field(default_factory=ProvidersConfig)
     controlcenter: ControlCenterConfig = field(default_factory=ControlCenterConfig)
     backend: BackendConfig = field(default_factory=BackendConfig)
@@ -163,6 +173,11 @@ class Config:
             value = getattr(self.output, name)
             if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
                 raise ValueError(f"[output].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
+        for source, seconds in self.triggers.cooldowns.items():
+            if not isinstance(seconds, int) or isinstance(seconds, bool) or seconds < 0:
+                raise ValueError(
+                    f"[triggers.cooldowns].{source} muss eine Ganzzahl >= 0 sein, nicht {seconds!r}"
+                )
         if not self.output.redaction_marker or not self.output.truncation_marker:
             raise ValueError("[output]-Marker duerfen nicht leer sein")
 
@@ -230,6 +245,13 @@ def _config_from_dict(data: dict) -> Config:
     clue_data = data.get("clue", {})
     clue = ClueConfig(triggers=list(clue_data.get("triggers", [])))
 
+    triggers_data = data.get("triggers", {})
+    triggers = TriggersConfig(
+        sources=[str(source) for source in triggers_data.get("sources", [])],
+        cooldowns=dict(triggers_data.get("cooldowns", {})),
+        agent_id=str(triggers_data.get("agent_id", TriggersConfig.agent_id)),
+    )
+
     providers_data = data.get("providers", {})
     claude_data = providers_data.get("claude", {})
     providers = ProvidersConfig(
@@ -263,6 +285,7 @@ def _config_from_dict(data: dict) -> Config:
         gate=gate,
         output=output,
         clue=clue,
+        triggers=triggers,
         providers=providers,
         controlcenter=controlcenter,
         backend=backend,
