@@ -45,6 +45,7 @@ from pathlib import Path
 from .backends import build_backend
 from .config import Config, load_config
 from .modes import diagnose_prompt, evaluate_prompt, session_start_message
+from .triggers import evaluate_triggers
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
 from .state import SessionState, state_path_for_session
@@ -287,6 +288,8 @@ def _cmd_hook_run(args) -> int:
     else:
         prompt = _extract_prompt(payload)
         message = evaluate_prompt(prompt, config, backend, state) if prompt is not None else None
+        hints = evaluate_triggers(prompt, config, backend, state) if prompt is not None else []
+        message = "\n\n".join([*hints, message] if message else hints) or None
 
     state.save(state_path)
 

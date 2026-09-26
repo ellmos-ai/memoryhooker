@@ -212,6 +212,21 @@ class UsmcBackend:
         hits.sort(key=lambda h: h.rank, reverse=True)
         return hits[:limit]
 
+    def triggers(self, sources: list[str], agent_id: str = "default") -> list:
+        """``context_triggers`` des gemeinsamen Vertrags (read-only)."""
+        from ..triggers import read_context_triggers
+
+        if not self.db_path.exists():
+            return []
+        try:
+            conn = self._connect()
+        except sqlite3.Error:
+            return []
+        try:
+            return read_context_triggers(conn, sources, agent_id)
+        finally:
+            conn.close()
+
     @staticmethod
     def _where_any_term(terms: list[str], columns: tuple[str, ...]) -> tuple[str, list[str]]:
         """``(col1 LIKE ? OR col2 LIKE ? OR ...)`` fuer jeden Term, ODER-verknuepft.

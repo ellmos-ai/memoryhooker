@@ -273,6 +273,17 @@ order = ["claude", "codex", "kimi", "agy", "git", "manual"]
 - **`clue`**: Emits a targeted, concise clue when prompt keywords match configured triggers.
 - **`remember+search`**: Executes local retrieval across backends and formats top-ranked sanitized hits directly into the hook output.
 
+### Trigger Injector (optional, off by default)
+Independent of the active mode, `[triggers]` emits curated keyword hints stored in the shared `context_triggers` table (`memory_union` contract, read by the `usmc` backend and by BACH's in-process backend). Each source yields at most one hint per prompt (first matching row by `id`) and has its own cooldown; `trigger_phrase` may list alternatives separated by `|`.
+
+```toml
+[triggers]
+sources = ["strategy"]   # context_triggers.source values; empty = off
+agent_id = "default"     # rows of this agent plus 'default'
+[triggers.cooldowns]
+strategy = 120           # seconds; default 60
+```
+
 ---
 
 ## Privacy, Redaction & Gates

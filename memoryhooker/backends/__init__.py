@@ -65,6 +65,15 @@ class ChainBackend:
         merged.sort(key=lambda hit: hit.rank, reverse=True)
         return merged[:limit]
 
+    def triggers(self, sources: list[str], agent_id: str = "default") -> list:
+        """Regeln aller Glieder in Kettenreihenfolge (siehe ``triggers.py``)."""
+        from ..triggers import backend_triggers
+
+        rules = []
+        for backend in self._backends:
+            rules.extend(backend_triggers(backend, sources, agent_id))
+        return rules
+
     @staticmethod
     def _safe_available(backend: MemoryBackend) -> bool:
         try:
