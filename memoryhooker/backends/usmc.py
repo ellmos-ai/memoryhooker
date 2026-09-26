@@ -178,7 +178,7 @@ class UsmcBackend:
             conn = self._connect()
             try:
                 rows = conn.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name IN (?, ?, ?)",
+                    "SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name IN (?, ?, ?)",
                     _REQUIRED_TABLES,
                 ).fetchall()
             finally:

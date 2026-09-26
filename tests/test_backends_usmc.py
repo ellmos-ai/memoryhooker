@@ -184,6 +184,29 @@ def test_available_when_full_schema_exists(tmp_path: Path):
     assert UsmcBackend(db_path).available() is True
 
 
+def test_available_and_searchable_on_union_views(tmp_path: Path):
+    """USMCs gemeinsames BACH/OCEAN-Schema haelt usmc_* als Lese-Views ueber
+    memory_* (T-20260920-823767362); die Views muessen als Backend zaehlen."""
+    db_path = tmp_path / "usmc_memory.db"
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript(_SCHEMA.replace("CREATE TABLE usmc_", "CREATE TABLE memory_"))
+    for name in ("facts", "lessons", "working"):
+        conn.execute(f"CREATE VIEW usmc_{name} AS SELECT * FROM memory_{name}")
+    conn.commit()
+    conn.close()
+    conn = sqlite3.connect(str(db_path))
+    conn.execute(
+        "INSERT INTO memory_lessons (category, title, problem, solution, created_at, updated_at) "
+        "VALUES ('general', 'Views zaehlen', 'Backend sah nur Tabellen', 'type IN table/view', 't', 't')"
+    )
+    conn.commit()
+    conn.close()
+
+    backend = UsmcBackend(db_path)
+    assert backend.available() is True
+    assert any("Views zaehlen" in hit.text for hit in backend.search("Views zaehlen"))
+
+
 def test_never_writes_to_a_missing_db(tmp_path: Path):
     """Kernanforderung des Tickets: nur lesen. Ein Backend, das (wie der
     reservierte USMC-Client) beim Instanziieren die DB anlegen wuerde, wuerde
