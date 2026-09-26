@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -111,12 +112,16 @@ def evaluate_triggers(
     *,
     now: float | None = None,
     fired: list[TriggerRule] | None = None,
+    accept: Callable[[TriggerRule], bool] | None = None,
 ) -> list[str]:
     """Hoechstens ein Hinweis je Injektor-Schluessel, mit Cooldown je Schluessel.
 
     Je Schluessel gewinnt die erste passende Regel in ``id``-Reihenfolge ueber
     alle seine Tabellenquellen. ``fired`` sammelt auf Wunsch die Regeln, die
     einen Hinweis geliefert haben (z. B. fuer Nutzungszaehler des Aufrufers).
+    ``accept`` filtert Regeln VOR der Auswahl (z. B. Hinweise, die der
+    Aufrufer ohnehin nicht zeigen kann): die naechste passende Regel greift,
+    und der Cooldown laeuft nur fuer einen tatsaechlich gelieferten Hinweis.
     """
     cfg = config.triggers
     if not cfg.sources or not prompt:
@@ -131,6 +136,8 @@ def evaluate_triggers(
         for rule in backend_triggers(backend, cfg.table_sources(key), cfg.agent_id):
             once = rule.source in cfg.once_per_session
             if not rule.matches(lowered) or (once and rule.key in state.trigger_once):
+                continue
+            if accept is not None and not accept(rule):
                 continue
             hint = sanitize_message(cfg.prefixes.get(key, "") + rule.hint, config.output)
             if not hint:

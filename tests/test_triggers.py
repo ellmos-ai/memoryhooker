@@ -177,3 +177,16 @@ def test_config_parses_groups_prefixes_once(tmp_path):
     assert cfg.table_sources("context") == ["manual", "theme"]
     assert cfg.table_sources("strategy") == ["strategy"]
     assert (cfg.prefixes, cfg.once_per_session) == ({"context": "[KONTEXT] "}, ["theme"])
+
+
+def test_accept_filters_before_selection_and_cooldown(tmp_path):
+    _, conn = _db(tmp_path, [("steuer", "bach steuer status", "manual"), ("steuer|beleg", "Workflow-Datei", "manual")])
+    config = Config(triggers=TriggersConfig(sources=["context"], groups={"context": ["manual"]}))
+    state = SessionState()
+    hints = evaluate_triggers("steuer", config, _Backend(conn), state, now=0,
+                              accept=lambda rule: "bach " not in rule.hint)
+    assert hints == ["Workflow-Datei"]
+    state = SessionState()
+    assert evaluate_triggers("steuer", config, _Backend(conn), state, now=0,
+                             accept=lambda rule: False) == []
+    assert state.trigger_last_ts == {}
