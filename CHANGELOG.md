@@ -2,6 +2,29 @@
 
 All notable public changes are documented in this file.
 
+## [Unreleased]
+
+### Repository Hygiene, CI Lifecycle Workflows & Level 1 SBOM Text Companion (Pfad A)
+
+- **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code unchanged.
+- **CI/CD Lifecycle Workflows**:
+  - Provisioned `.github/workflows/auto-assign.yml` with `actions/github-script@v7`, `timeout-minutes: 5`, concurrency `cancel-in-progress: true`, and least-privilege permissions (`issues: write`, `pull-requests: write`).
+  - Provisioned `.github/workflows/label-sync.yml` with `EndBug/label-sync@v2`, `timeout-minutes: 5`, concurrency `cancel-in-progress: true`, and permissions `issues: write`.
+  - Provisioned `.github/labels.yml` with 11 standard labels per GOVERNANCE.md §4.2.
+  - Provisioned `.github/workflows/stale.yml` with daily cron `30 1 * * *`, `timeout-minutes: 10`, concurrency `cancel-in-progress: true`, and least-privilege permissions.
+  - Provisioned `.github/workflows/welcome.yml` with `actions/first-interaction@v3`, `timeout-minutes: 5`, and concurrency `cancel-in-progress: true`.
+- **Multi-Host Cloud-Sync & Lock Defense**: Hardened `.gitignore` against cloud synchronization conflict copies (`*-ASUS*`, `*-IDEAPAD*`, `*_WORKSTATION*`, `*-WORKSTATION-LG.*`), canonical locks (`LOCK`, `LOCK.*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`), test/coverage caches (`.pytest_temp/`, `.pytest_tmp*/`, `.tox/`), and OS artifacts (`Desktop.ini`, `desktop.ini`, `ehthumbs.db`).
+- **Canonical Open-Source NOTICE**: Created `NOTICE` attribution file in repository root cross-referencing `THIRD_PARTY_LICENSES.md` and `THIRD_PARTY_LICENSES.txt`.
+- **Level 1 SBOM Plain-Text Companion**: Created `THIRD_PARTY_LICENSES.txt` companion file with direct runtime dependency inventory (`hook-master`, Python stdlib) and Invariant Cross-Reference Matrix table certifying all 10 governance and runtime invariants (`INV-LOCAL-01` through `INV-SLA-10`).
+- **Level 1 SBOM Re-Audit**: Re-audited `THIRD_PARTY_LICENSES.md` Stand 2026-09-29 incorporating `hook-master`, Level 1 SBOM Invariant Compliance Status table, and links to `NOTICE` and `THIRD_PARTY_LICENSES.txt`.
+- **PEP 621 Standardisation**:
+  - Expanded `license-files` in `pyproject.toml` to `["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.md", "THIRD_PARTY_LICENSES.txt"]`.
+  - Saturated `keywords` with 20 relevant topics for GitHub discoverability.
+  - Registered project URLs for `Notice`, `Third-Party Licenses (Text)`, `Plain-Text Licenses`, and `Level 1 SBOM`.
+  - Hardened `[tool.pytest.ini_options]` with `minversion = "7.0"`, `addopts = "-ra -v --basetemp=.pytest_temp"`, and `norecursedirs`.
+- **Documentation & Context Parity**: Updated test count (`210+ passed | 100% green`), verification badges (`Verified: 2026-09-29`), Attribution and Level 1 SBOM Plain-Text badges across `README.md` and `README_de.md`, synchronized `llms.txt`, and registered Pfad A review in `MARKETING-LOG.txt`.
+- **Automated Contract Tests**: Expanded `tests/test_metadata.py` with contract tests verifying workflows, labels, canonical NOTICE, plain-text SBOM, PEP 621 license files/pytest options, .gitignore multi-host patterns, and changelog/marketing-log recency.
+
 ## [0.3.3] - 2026-09-14
 
 ### Discoverability & Marketing Architecture (Pfad B)

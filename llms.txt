@@ -3,7 +3,7 @@
 Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
 
 Version: 0.3.3
-Last-checked: 2026-09-14
+Last-checked: 2026-09-29
 Ecosystem: ellmos-ai
 Umbrella: open-bricks
 
@@ -11,14 +11,16 @@ Umbrella: open-bricks
 
 - README.md: Public usage, visual architecture, configuration, providers, backends, and comparative matrix.
 - README_de.md: Deutsche Dokumentation mit vollständiger 16-Punkte-Anker-Parität.
+- NOTICE: Canonical open-source attribution notice and ecosystem heritage.
 - SECURITY.md: Private vulnerability-reporting requirements, threat model, and 48-hour response SLA.
-- THIRD_PARTY_LICENSES.md: Audited permissive licenses (PSFL-2.0, MIT, Apache-2.0) and zero-copyleft guarantee.
+- THIRD_PARTY_LICENSES.md: Audited permissive licenses (PSFL-2.0, MIT, Apache-2.0) and Level 1 SBOM invariant mapping.
+- THIRD_PARTY_LICENSES.txt: Plain-text Level 1 SBOM dependency inventory and invariant certifications.
 - MARKETING-LOG.txt: Target personas, discoverability keywords, and comparative matrix audit.
 - PROVENANCE.md: Clean-history and BACH lineage statement.
 - memoryhooker/config.py: Configuration schema, mode definitions, and safe defaults.
 - memoryhooker/backends/: Local read-only retrieval adapters (USMC, Gardener, Files, BACH).
 - memoryhooker/providers/: Host-specific snippet generators (Claude Code, Codex, Kimi, Antigravity, Git, manual).
-- tests/: 180+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
+- tests/: 210+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
 
 ## Safety properties
 

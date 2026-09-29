@@ -1,0 +1,61 @@
+# =============================================================================
+# Third-Party Licenses - memoryhooker (ellmos-ai/memoryhooker)
+# =============================================================================
+# memoryhooker is licensed under the MIT License.
+# Canonical Notice: NOTICE
+# Comprehensive Markdown SBOM: THIRD_PARTY_LICENSES.md
+# Audit Date: 2026-09-29
+# This document lists third-party dependencies used during runtime, build,
+# packaging, and testing, along with their respective licenses and upstream URLs.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Runtime Dependencies
+# -----------------------------------------------------------------------------
+
+hook-master
+License: MIT
+URL: https://github.com/ellmos-ai/hook-master/blob/main/LICENSE
+Description: Host-agnostic lifecycle hook provider contracts, base classes, and hook invariants.
+
+Python Standard Library
+License: Python Software Foundation License (PSF-2.0)
+URL: https://docs.python.org/3/license.html
+Description: Core runtime modules (sqlite3, pathlib, json, re, hashlib, argparse, sys, time, dataclasses, typing). 100% pure Python standard library.
+
+# -----------------------------------------------------------------------------
+# 2. Build & Packaging Dependencies
+# -----------------------------------------------------------------------------
+
+setuptools
+License: MIT
+URL: https://github.com/pypa/setuptools/blob/main/LICENSE
+Description: Package build backend for PEP 517 / PEP 621 compliant distribution.
+
+# -----------------------------------------------------------------------------
+# 3. Development, Linting & Test Dependencies
+# -----------------------------------------------------------------------------
+
+pytest
+License: MIT
+URL: https://github.com/pytest-dev/pytest/blob/main/LICENSE
+Description: Framework for unit, regression, and metadata contract test suites.
+
+ruff
+License: MIT OR Apache-2.0
+URL: https://github.com/astral-sh/ruff/blob/main/LICENSE-MIT
+Description: Fast Python linter and code formatter.
+
+# =============================================================================
+# Level 1 SBOM Invariant Compliance Status (Stand 2026-09-29):
+# - INV-LOCAL-01: PASS (100% Local-First & Zero Egress; no external sockets or telemetry)
+# - INV-READONLY-02: PASS (External databases opened strictly in read-only mode mode=ro)
+# - INV-UNPRIV-03: PASS (Unprivileged user mode execution via RunAsInvoker)
+# - INV-REDACT-04: PASS (Deterministic privacy boundary redacting secret tokens and absolute paths)
+# - INV-BOUND-05: PASS (Deterministic output length and message bounds)
+# - INV-GATE-06: PASS (Opt-in SHA-256 Change Gate persisting only hashes, never raw prompts)
+# - INV-SPAM-07: PASS (Session injection caps, cooldown, and calendar-day TTL protection)
+# - INV-FAILOPEN-08: PASS (Resilient fail-open behavior; hooks never crash calling harness)
+# - INV-LLM-09: PASS (Machine-readable llms.txt index for AI agent and tool integration)
+# - INV-SLA-10: PASS (Binding Dual Security Response SLA: 48h Response, 5d Triage)
+# =============================================================================

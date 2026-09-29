@@ -1,5 +1,38 @@
 # MARKETING-LOG.txt — ellmos-ai/memoryhooker
 
+## 2026-09-29 — Pfad A Technische Hygiene, CI-Workflow-Härtung, NOTICE-Attribution & Level-1-SBOM-Text-Begleitdatei
+
+- **Wahlkriterium**: `ellmos-ai/memoryhooker` (`C:\_Local_DEV\repos\memoryhooker-public`, Remote `https://github.com/ellmos-ai/memoryhooker.git`, Branch `main`) ausgewählt laut `_tools/repo_radar.py candidates --path a` (Kandidat #1 der sauberen kanonischen Repositories auf `main`, Ruhezustand 128h > 24.0h Cooldown; letzter Pfad A Check vor 8 Tagen am 2026-09-21). 100% sauberer Git-Zustand auf Branch `main`, 0 aktive Locks via `lock_status.py` (UNLOCKED), Cooldown-Check bestanden.
+- **Version-Freeze Disziplin (T-20260920-167562623)**: Version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, und Quelltexten strikt unverändert beibehalten; kein Version-Bump; alle Erweiterungen unter `## [Unreleased]` in `CHANGELOG.md` dokumentiert.
+- **Pfad A Schwerpunkte**:
+  1. **CI/CD Lifecycle Workflows**:
+     - `.github/workflows/auto-assign.yml`: Automatisches Zuweisen von Pull Requests mit `actions/github-script@v7`, `timeout-minutes: 5`, Concurrency `cancel-in-progress: true` und least-privilege Rechten (`issues: write`, `pull-requests: write`).
+     - `.github/workflows/label-sync.yml`: Standardisiertes Label-Sync via `EndBug/label-sync@v2`, `timeout-minutes: 5`, Concurrency `cancel-in-progress: true` und Rechten `issues: write`.
+     - `.github/labels.yml`: 11 kanonische Standard-Labels gemäß GOVERNANCE.md §4.2 bereitgestellt.
+     - `.github/workflows/stale.yml`: Tägliche Stale-Issue-/PR-Verwaltung (`30 1 * * *`, `timeout-minutes: 10`, Concurrency `cancel-in-progress: true`).
+     - `.github/workflows/welcome.yml`: Automatischer Erstbeitrags-Willkommensgruß mit `actions/first-interaction@v3`, `timeout-minutes: 5`.
+     - `.github/workflows/ci.yml`: Multi-OS Testmatrix (Ubuntu, Windows, macOS) über Python 3.10-3.13 verifiziert.
+  2. **Multi-Host Cloud-Sync & Lock-Defense**:
+     - `.gitignore` umfassend gehärtet gegen Host-Konfliktkopien (`*-ASUS*`, `*-IDEAPAD*`, `*_WORKSTATION*`, `*-WORKSTATION-LG.*`), kanonische Locks (`LOCK`, `LOCK.*`, `LOCK.user.*`, `LOCK.until.*`, `LOCK.condition.*`), Test- und Coverage-Caches (`.pytest_temp/`, `.pytest_tmp*/`, `.tox/`) und Betriebssystem-Artefakte (`Desktop.ini`, `desktop.ini`, `ehthumbs.db`).
+  3. **Kanonische NOTICE Attribution**:
+     - `NOTICE` im Repository-Root erstellt (Copyright 2026 Lukas Geiger & ellmos-ai contributors, ellmos-ai Organisation unter open-bricks Umbrella, MIT Lizenz, Querverweis auf `THIRD_PARTY_LICENSES.md` und `THIRD_PARTY_LICENSES.txt`).
+  4. **Level 1 SBOM Text-Begleitdatei & Re-Audit**:
+     - `THIRD_PARTY_LICENSES.txt` als reine Textbegleitdatei angelegt (direkte Runtime-Abhängigkeiten `hook-master` und Python-Standardbibliothek, Entwicklungsabhängigkeiten `pytest`, `ruff`, `setuptools`).
+     - Zertifizierung aller 10 Governance- und Laufzeit-Invarianten (`INV-LOCAL-01` bis `INV-SLA-10`), Bestätigung der Zero-Copyleft & Zero-Egress Core Isolation sowie unprivileged `RunAsInvoker` Non-Elevation.
+     - `THIRD_PARTY_LICENSES.md` auf Stand 2026-09-29 re-auditiert mit Querverweisen auf `NOTICE` und `THIRD_PARTY_LICENSES.txt`.
+  5. **PEP 621 Standardisierung in pyproject.toml**:
+     - `license-files` Whitelist um `NOTICE` und `THIRD_PARTY_LICENSES.txt` erweitert.
+     - `keywords` mit 20 relevanten Themen saturiert.
+     - URLs für `Notice`, `Third-Party Licenses (Text)`, `Plain-Text Licenses` und `Level 1 SBOM` registriert.
+     - `[tool.pytest.ini_options]` mit `minversion = "7.0"`, `addopts = "-ra -v --basetemp=.pytest_temp"` und `norecursedirs` gehärtet.
+  6. **Dokumentations- & Test-Parität**:
+     - `README.md` und `README_de.md` Badges für 210+ Tests, Stand `2026-09-29`, Attribution `NOTICE` und `Level 1 SBOM: Plain-Text` synchronisiert (unter strikter Beibehaltung aller 16 Schnellnavigations-Anker).
+     - `llms.txt` aktualisiert mit Stand `2026-09-29` und Referenzen auf `NOTICE` und `THIRD_PARTY_LICENSES.txt`.
+  7. **Vertragstest-Erweiterung in tests/test_metadata.py**:
+     - Contract-Tests für CI-Workflows, Labels, kanonische NOTICE, Level 1 SBOM Textbegleitdatei, PEP 621 Konfiguration und Gitignore-Lock-Guards.
+
+---
+
 ## 2026-09-14 — Bilingual README Architecture, Comparative Matrix & Discoverability Audit (v0.3.3)
 
 - **Wahlkriterium**: `ellmos-ai/memoryhooker` (`C:\_Local_DEV\repos\memoryhooker-public`, Remote `https://github.com/ellmos-ai/memoryhooker.git`, Branch `main`) ausgewählt laut `_tools/repo_radar.py candidates --path b` (Kandidat #1, Ruhezustand >340h > 24.0h Cooldown; älteste Pfad B Prüfung in Warteschlange). 100% sauberer Git-Zustand auf Branch `main`, 0 aktive Locks, Cooldown-Check bestanden.

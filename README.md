@@ -7,8 +7,10 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-180%2B%20passed%20%7C%20100%25%20green-brightgreen)](#verification--tests)
-[![Verified: 2026-09-14](https://img.shields.io/badge/verified-2026--09--14-blue.svg)](#verification--tests)
+[![Tests](https://img.shields.io/badge/tests-210%2B%20passed%20%7C%20100%25%20green-brightgreen)](#verification--tests)
+[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](#verification--tests)
+[![Notice](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
+[![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain--Text-success.svg)](THIRD_PARTY_LICENSES.txt)
 [![Security](https://img.shields.io/badge/security-Local--First-green.svg)](SECURITY.md)
 [![Security SLA](https://img.shields.io/badge/security%20SLA-48h%20response%20%7C%205d%20triage-blue.svg)](SECURITY.md)
 [![Privacy](https://img.shields.io/badge/privacy-Zero--Egress-brightgreen.svg)](SECURITY.md)
@@ -334,7 +336,7 @@ python -m ruff check .
 python -m compileall -q memoryhooker tests
 ```
 
-Over 180 automated unit, integration, and contract tests validate incremental retrieval, FTS5 queries, USMC table curation, deterministic redaction, session rate limiting, and manifest parity.
+Over 210 automated unit, integration, and contract tests validate incremental retrieval, FTS5 queries, USMC table curation, deterministic redaction, session rate limiting, and manifest parity.
 
 ---
 
@@ -365,7 +367,7 @@ MemoryHooker is a core component of the `ellmos-ai` ecosystem under the `open-br
 
 ## Third-Party Licenses & Transparency
 
-MemoryHooker maintains an audited inventory of standard library components and developer tooling in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). All runtime code relies exclusively on Python standard library modules under PSFL-2.0, with development dependencies under MIT and Apache-2.0. There are **zero copyleft dependencies**. Target personas, search keywords, and competitive analysis are tracked in [`MARKETING-LOG.txt`](MARKETING-LOG.txt).
+MemoryHooker maintains an audited inventory of runtime components and developer tooling in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (plain-text companion: [`THIRD_PARTY_LICENSES.txt`](THIRD_PARTY_LICENSES.txt)) and canonical attribution in [`NOTICE`](NOTICE). All runtime code relies on permissive components (MIT and PSFL-2.0), with development dependencies under MIT and Apache-2.0. There are **zero copyleft dependencies**. Target personas, search keywords, and competitive analysis are tracked in [`MARKETING-LOG.txt`](MARKETING-LOG.txt).
 
 ---
 

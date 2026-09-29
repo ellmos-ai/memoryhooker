@@ -1,10 +1,70 @@
+# Byte-compiled / optimized / packaging
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 build/
 dist/
+.eggs/
+
+# Virtual Environments
 .venv/
+venv/
+env/
+
+# Databases & Runtime State (Keep local, exclude WAL/SHM)
 *.db
 *.sqlite
 *.db-wal
 *.db-shm
+.memoryhooker/
+
+# Testing & Linting Caches
+.pytest_cache/
+.pytest_temp/
+.pytest_tmp*/
+.ruff_cache/
+.tox/
+.coverage
+.hypothesis/
+.turbo/
+.nyc_output/
+htmlcov/
+
+# Multi-Host Sync Defense & Cloud Conflict Copies
+*-ASUS*
+*-ASUS-GEI*
+*-LAPTOP*
+*-Mac Studio*
+*-MacBook*
+*-IDEAPAD*
+*-IDEAPAD-GEI*
+*_WORKSTATION*
+*_WORKSTATION-LG*
+*-WORKSTATION.*
+*-WORKSTATION-LG.*
+
+# Canonical Lock System Guards (Fail-Closed, Never Commit Live Locks)
+LOCK
+LOCK.*
+LOCK*.txt
+LOCK.user.*
+LOCK.until.*
+LOCK.condition.*
+.automation-lock
+LOCK.permissions.json
+
+# Exempt package lockfile if ever needed
+!package-lock.json
+
+# OS & Editor Artifacts
+Desktop.ini
+desktop.ini
+ehthumbs.db
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+*.orig
+*.rej

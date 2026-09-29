@@ -9,9 +9,13 @@ description = "Local-first memory reminders and retrieval for coding-agent hooks
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.md", "THIRD_PARTY_LICENSES.txt"]
 authors = [{ name = "ellmos-ai contributors" }]
-keywords = ["memory", "llm-agent", "hook", "gardener", "fts5", "claude-code", "offline-first", "usmc"]
+keywords = [
+    "memory", "llm-agent", "hook", "gardener", "fts5", "claude-code", "offline-first", "usmc",
+    "ellmos-ai", "open-bricks", "local-first", "zero-egress", "prompt-injection", "context-triggers",
+    "agent-framework", "sqlite", "python", "developer-tools", "session-state", "runasinvoker",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -35,9 +39,13 @@ Documentation = "https://github.com/ellmos-ai/memoryhooker#readme"
 Issues = "https://github.com/ellmos-ai/memoryhooker/issues"
 Changelog = "https://github.com/ellmos-ai/memoryhooker/blob/main/CHANGELOG.md"
 Security = "https://github.com/ellmos-ai/memoryhooker/blob/main/SECURITY.md"
+Notice = "https://github.com/ellmos-ai/memoryhooker/blob/main/NOTICE"
 "Parent Organization" = "https://github.com/ellmos-ai"
 "Umbrella Ecosystem" = "https://github.com/open-bricks"
 "Third-Party Licenses" = "https://github.com/ellmos-ai/memoryhooker/blob/main/THIRD_PARTY_LICENSES.md"
+"Third-Party Licenses (Text)" = "https://github.com/ellmos-ai/memoryhooker/blob/main/THIRD_PARTY_LICENSES.txt"
+"Plain-Text Licenses" = "https://github.com/ellmos-ai/memoryhooker/blob/main/THIRD_PARTY_LICENSES.txt"
+"Level 1 SBOM" = "https://github.com/ellmos-ai/memoryhooker/blob/main/THIRD_PARTY_LICENSES.md"
 "Marketing Log" = "https://github.com/ellmos-ai/memoryhooker/blob/main/MARKETING-LOG.txt"
 "LLM Ready" = "https://github.com/ellmos-ai/memoryhooker/blob/main/llms.txt"
 
@@ -52,9 +60,11 @@ memoryhooker = "memoryhooker.cli:main"
 include = ["memoryhooker*"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -v"
+minversion = "7.0"
+addopts = "-ra -v --basetemp=.pytest_temp"
 pythonpath = "."
 testpaths = ["tests"]
+norecursedirs = [".pytest_temp", ".hypothesis", ".turbo", ".nyc_output", ".tox", "build", "dist", ".git", ".venv"]
 
 [tool.ruff]
 line-length = 120
@@ -63,4 +73,3 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RUF"]
 ignore = ["E501", "E402"]
-

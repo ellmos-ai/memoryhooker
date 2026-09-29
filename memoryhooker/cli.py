@@ -45,10 +45,10 @@ from pathlib import Path
 from .backends import build_backend
 from .config import Config, load_config
 from .modes import diagnose_prompt, evaluate_prompt, session_start_message
-from .triggers import evaluate_triggers
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
 from .state import SessionState, state_path_for_session
+from .triggers import evaluate_triggers
 
 # Kandidaten-Feldnamen fuer den Prompt-Text im UserPromptSubmit-stdin-JSON.
 # ACHTUNG (siehe ROADMAP.md, "Zu verifizieren, bevor gebaut wird"): der

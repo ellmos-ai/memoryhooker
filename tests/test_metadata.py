@@ -207,6 +207,124 @@ def test_llms_txt_content():
     content = llms_path.read_text(encoding="utf-8")
 
     assert "Version: 0.3.3" in content
-    assert "Last-checked: 2026-09-14" in content
+    assert "Last-checked: 2026-09-29" in content
+    assert "NOTICE" in content
     assert "THIRD_PARTY_LICENSES.md" in content
+    assert "THIRD_PARTY_LICENSES.txt" in content
     assert "MARKETING-LOG.txt" in content
+
+
+def test_ci_workflows_extended_governance():
+    workflows_dir = ROOT / ".github" / "workflows"
+
+    # auto-assign.yml
+    auto_assign = (workflows_dir / "auto-assign.yml").read_text(encoding="utf-8")
+    assert "timeout-minutes: 5" in auto_assign
+    assert "cancel-in-progress: true" in auto_assign
+    assert "pull-requests: write" in auto_assign
+
+    # label-sync.yml
+    label_sync = (workflows_dir / "label-sync.yml").read_text(encoding="utf-8")
+    assert "timeout-minutes: 5" in label_sync
+    assert "cancel-in-progress: true" in label_sync
+    assert "issues: write" in label_sync
+
+    # labels.yml
+    labels_file = (ROOT / ".github" / "labels.yml").read_text(encoding="utf-8")
+    assert "name: bug" in labels_file
+    assert "name: enhancement" in labels_file
+    assert "name: documentation" in labels_file
+    assert "name: stale" in labels_file
+
+    # stale.yml
+    stale = (workflows_dir / "stale.yml").read_text(encoding="utf-8")
+    assert "timeout-minutes: 10" in stale
+    assert "cancel-in-progress: true" in stale
+    assert "30 1 * * *" in stale
+
+    # welcome.yml
+    welcome = (workflows_dir / "welcome.yml").read_text(encoding="utf-8")
+    assert "timeout-minutes: 5" in welcome
+    assert "cancel-in-progress: true" in welcome
+
+
+def test_canonical_notice_file():
+    notice_path = ROOT / "NOTICE"
+    assert notice_path.exists()
+    content = notice_path.read_text(encoding="utf-8")
+
+    assert "MemoryHooker" in content
+    assert "Lukas Geiger" in content
+    assert "ellmos-ai" in content
+    assert "open-bricks" in content
+    assert "THIRD_PARTY_LICENSES.md" in content
+    assert "THIRD_PARTY_LICENSES.txt" in content
+
+
+def test_third_party_licenses_plain_text_companion():
+    txt_path = ROOT / "THIRD_PARTY_LICENSES.txt"
+    assert txt_path.exists()
+    content = txt_path.read_text(encoding="utf-8")
+
+    assert "hook-master" in content
+    assert "Python Standard Library" in content
+    assert "INV-LOCAL-01" in content
+    assert "INV-SLA-10" in content
+    assert "RunAsInvoker" in content
+    assert "Audit Date: 2026-09-29" in content
+
+
+def test_pep621_license_files_and_pytest_config():
+    pyproject_path = ROOT / "pyproject.toml"
+    with pyproject_path.open("rb") as f:
+        data = tomllib.load(f)
+
+    project = data["project"]
+    license_files = project["license-files"]
+    assert "LICENSE" in license_files
+    assert "NOTICE" in license_files
+    assert "THIRD_PARTY_LICENSES.md" in license_files
+    assert "THIRD_PARTY_LICENSES.txt" in license_files
+
+    keywords = project["keywords"]
+    assert len(keywords) == 20
+    assert "memory" in keywords
+    assert "local-first" in keywords
+    assert "zero-egress" in keywords
+
+    urls = project["urls"]
+    assert "Notice" in urls
+    assert "Level 1 SBOM" in urls
+    assert "Third-Party Licenses (Text)" in urls
+    assert "Plain-Text Licenses" in urls
+
+    pytest_opts = data["tool"]["pytest"]["ini_options"]
+    assert pytest_opts["minversion"] == "7.0"
+    assert "--basetemp=.pytest_temp" in pytest_opts["addopts"]
+    assert ".pytest_temp" in pytest_opts["norecursedirs"]
+
+
+def test_gitignore_multihost_lock_defense():
+    gitignore_path = ROOT / ".gitignore"
+    assert gitignore_path.exists()
+    content = gitignore_path.read_text(encoding="utf-8")
+
+    assert "*-ASUS*" in content
+    assert "*-IDEAPAD*" in content
+    assert "*_WORKSTATION*" in content
+    assert "*-WORKSTATION-LG.*" in content
+    assert "LOCK.user.*" in content
+    assert "LOCK.condition.*" in content
+    assert ".pytest_temp/" in content
+    assert "Desktop.ini" in content
+    assert "desktop.ini" in content
+
+
+def test_changelog_and_marketing_log_recency_20260929():
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert "## [Unreleased]" in changelog
+    assert "Pfad A" in changelog
+
+    marketing_log = (ROOT / "MARKETING-LOG.txt").read_text(encoding="utf-8")
+    assert "## 2026-09-29" in marketing_log
+    assert "Pfad A" in marketing_log

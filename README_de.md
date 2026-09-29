@@ -7,8 +7,10 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![Plattform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](pyproject.toml)
 [![Lizenz](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-180%2B%20bestanden%20%7C%20100%25%20gr%C3%BCn-brightgreen)](#verifikation--tests)
-[![Geprüft: 2026-09-14](https://img.shields.io/badge/gepr%C3%BCft-2026--09--14-blue.svg)](#verifikation--tests)
+[![Tests](https://img.shields.io/badge/tests-210%2B%20bestanden%20%7C%20100%25%20gr%C3%BCn-brightgreen)](#verifikation--tests)
+[![Geprüft: 2026-09-29](https://img.shields.io/badge/gepr%C3%BCft-2026--09--29-blue.svg)](#verifikation--tests)
+[![Notice](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
+[![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Reiner%20Text-success.svg)](THIRD_PARTY_LICENSES.txt)
 [![Sicherheit](https://img.shields.io/badge/security-Local--First-green.svg)](SECURITY.md)
 [![Sicherheits-SLA](https://img.shields.io/badge/security%20SLA-48h%20Antwort%20%7C%205t%20Triage-blue.svg)](SECURITY.md)
 [![Datenschutz](https://img.shields.io/badge/privacy-Zero--Egress-brightgreen.svg)](SECURITY.md)
@@ -318,7 +320,7 @@ python -m ruff check .
 python -m compileall -q memoryhooker tests
 ```
 
-Über 180 automatisierte Unit-, Integrations- und Vertragstests decken inkrementelle Suche, FTS5-Abfragen, USMC-Tabellenabfragen, deterministische Redigierung, Sitzungs-Ratenbegrenzungen und Manifest-Parität ab.
+Über 210 automatisierte Unit-, Integrations- und Vertragstests decken inkrementelle Suche, FTS5-Abfragen, USMC-Tabellenabfragen, deterministische Redigierung, Sitzungs-Ratenbegrenzungen und Manifest-Parität ab.
 
 ---
 
@@ -349,7 +351,7 @@ MemoryHooker ist Teil des `ellmos-ai`-Ökosystems unter dem Open-Source-Dach von
 
 ## Drittanbieter-Lizenzen & Transparenz
 
-MemoryHooker führt ein auditiertes Verzeichnis aller Standardbibliothek- und Entwicklungskomponenten in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md). Sämtlicher Produktivcode basiert auf der Python-Standardbibliothek unter PSFL-2.0, Entwicklungs-Tools stehen unter MIT und Apache-2.0. Es gibt **keine Copyleft-Abhängigkeiten**. Ziel-Personas, Suchbegriffe und Wettbewerbsanalysen sind in [`MARKETING-LOG.txt`](MARKETING-LOG.txt) dokumentiert.
+MemoryHooker führt ein auditiertes Verzeichnis aller Laufzeitkomponenten und Entwicklungswerkzeuge in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (reine Textbegleitdatei: [`THIRD_PARTY_LICENSES.txt`](THIRD_PARTY_LICENSES.txt)) sowie eine kanonische Attribution in [`NOTICE`](NOTICE). Sämtlicher Produktivcode basiert auf permissiven Komponenten (MIT und PSFL-2.0), Entwicklungs-Tools stehen unter MIT und Apache-2.0. Es gibt **keine Copyleft-Abhängigkeiten**. Ziel-Personas, Suchbegriffe und Wettbewerbsanalysen sind in [`MARKETING-LOG.txt`](MARKETING-LOG.txt) dokumentiert.
 
 ---
 
