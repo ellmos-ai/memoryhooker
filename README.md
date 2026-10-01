@@ -7,8 +7,8 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-210%2B%20passed%20%7C%20100%25%20green-brightgreen)](#verification--tests)
-[![Verified: 2026-09-29](https://img.shields.io/badge/verified-2026--09--29-blue.svg)](#verification--tests)
+[![Tests](https://img.shields.io/badge/tests-213%20passed%20%7C%20100%25%20green-brightgreen)](#sec-12)
+[![Verified: 2026-10-01](https://img.shields.io/badge/verified-2026--10--01-blue.svg)](#sec-12)
 [![Notice](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain--Text-success.svg)](THIRD_PARTY_LICENSES.txt)
 [![Security](https://img.shields.io/badge/security-Local--First-green.svg)](SECURITY.md)
@@ -19,7 +19,7 @@
 [![Umbrella](https://img.shields.io/badge/umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-orange.svg)](llms.txt)
 [![Third-Party: Audited](https://img.shields.io/badge/third--party-audited-success.svg)](THIRD_PARTY_LICENSES.md)
-[![Marketing Log](https://img.shields.io/badge/marketing--log-active-blue.svg)](MARKETING-LOG.txt)
+[![Marketing Log](https://img.shields.io/badge/marketing--log-2026--10--01-blue.svg)](MARKETING-LOG.txt)
 
 [English](README.md) | [Deutsch](README_de.md)
 
@@ -31,27 +31,31 @@ MemoryHooker connects local memory sources (Markdown directories, SQLite FTS5 fu
 
 ---
 
+<a id="sec-00"></a><a id="quick-navigation"></a><a id="schnellnavigation"></a>
 ## Quick Navigation
 
 - [✨ Highlights & Philosophy](#highlights--philosophy)
+- [🏗️ System Architecture & Visual Topology](#system-architecture--visual-topology)
+- [🔄 End-to-End Lifecycle Sequence](#end-to-end-lifecycle-sequence)
 - [🎯 Target Personas & Discoverability](#target-personas--discoverability)
 - [⚖️ Comparative Matrix vs Alternatives](#comparative-matrix-vs-alternatives)
-- [🏗️ System Architecture Flow](#system-architecture-flow)
-- [🔄 End-to-End Lifecycle Sequence](#end-to-end-lifecycle-sequence)
-- [🛡️ Governance & Runtime Invariants](#governance--runtime-invariants)
-- [🔌 Supported Providers & Snippets](#supported-providers--snippets)
 - [🧠 Memory Backends & Ranking](#memory-backends--ranking)
+- [🛡️ Governance & Runtime Invariants](#governance--runtime-invariants)
 - [🎛️ Modes & Configuration](#modes--configuration)
-- [🔒 Privacy, Redaction & Gates](#privacy-redaction--gates)
+- [🔌 Supported Providers & Snippets](#supported-providers--snippets)
+- [🔒 Privacy, Redaction & Change Gates](#privacy-redaction--change-gates)
 - [💻 Command Line & Diagnostics](#command-line--diagnostics)
-- [🧪 Verification & Tests](#verification--tests)
-- [🌐 Sibling Ecosystem & Partner Modules](#sibling-ecosystem--partner-modules)
-- [📄 Third-Party Licenses & Transparency](#third-party-licenses--transparency)
-- [🔐 Security Policy & SLA](#security-policy--sla)
-- [📜 License & Provenance](#license--provenance)
+- [🧪 Verification & Test Suite](#verification--test-suite)
+- [🌐 Sibling Ecosystem & Partner Matrix](#sibling-ecosystem--partner-matrix)
+- [📄 Third-Party Licenses & Level 1 SBOM](#third-party-licenses--level-1-sbom)
+- [🔐 Security Policy & 48h SLA](#security-policy--48h-sla)
+- [📖 Machine-Readable Context & llms.txt](#machine-readable-context--llmstxt)
+- [🏛️ Author, Attribution & Canonical Notice](#author-attribution--canonical-notice)
+- [📜 Statutory Disclaimer (§ 521 BGB) & License](#statutory-disclaimer--521-bgb--license)
 
 ---
 
+<a id="sec-01"></a><a id="highlights--philosophy"></a><a id="highlights--philosophie"></a>
 ## Highlights & Philosophy
 
 - 🧠 **Multi-Tier Local Memory**: Queries curated USMC tables (`usmc_facts`, `usmc_lessons`, `usmc_working`), Gardener SQLite FTS5 databases, or local Markdown document hierarchies with configurable fallback chains.
@@ -64,37 +68,50 @@ MemoryHooker connects local memory sources (Markdown directories, SQLite FTS5 fu
 
 ---
 
-## Target Personas & Discoverability
+<a id="sec-02"></a><a id="system-architecture--visual-topology"></a><a id="systemarchitektur--visuelle-topologie"></a>
+## System Architecture & Visual Topology
 
-| Persona | Core Profile & Tech Stack | Architectural Friction & Pain Point | How `memoryhooker` Solves It |
-|:---|:---|:---|:---|
-| **Autonomous AI Coding Agents & Harness Engineers** | Building agent harnesses (Claude Code, Codex CLI, Kimi Code, Antigravity, custom loops). | Blind prompt execution without historical project lessons; context window stuffing causes latency and excessive inference token consumption. | Lifecycle hooks fire tailored memories (`remember`, `clue`, `remember+search`) with strict output bounds and fail-open resilience. |
-| **Local-First & Zero-Egress System Architects** | Managing secure, on-premise, or air-gapped developer environments. | Cloud vector databases (Pinecone, Qdrant Cloud) leak proprietary code fragments, require credentials, and add network failure modes. | 100% Zero-Egress core standard library, zero external sockets, local SQLite `mode=ro` queries, and unprivileged operation (`RunAsInvoker`). |
-| **Multi-Agent Swarm Orchestrators & Context Engineers** | Designing collaborative multi-agent architectures (BACH, USMC, Swarms). | Competing write operations corrupt state; noisy historical transcripts drown out curated lessons and architecture guidelines. | Read-only adapters for curated USMC/Gardener databases, transcript noise filtering, and deterministic multi-source deduplication. |
-| **Compliance, Security & Enterprise DevOps Officers** | Regulating enterprise AI security boundaries and preventing data leakage. | Prompts and logs inadvertently expose secret API keys, internal paths, or unconstrained state growth across developer machines. | Deterministic regex redaction of secrets/tokens and paths, strict output caps, daily state TTL resets, and transparent audit logs. |
+### Four-View Architectural Topology Projection
 
-**High-Intent Discovery Keywords & Topic Tags:** `coding-agent-memory-hook`, `local-first-memory-retrieval`, `llm-agent-hook-reminders`, `claude-code-memory-integration`, `codex-hook-memory`, `zero-egress-ai-memory`, `sqlite-fts5-agent-memory`, `deterministic-context-injection`, `privacy-safe-llm-hook`, `usmc-memory-backend`.
+```text
++-------------------------------------------------------------------------------+
+|  VIEW 1: CALLER RUNTIMES, LIFECYCLE HOOKS & AGENT CLIENTS                     |
+|  - Coding Agent Loops (Claude Code, Codex CLI, Kimi Code, Antigravity)        |
+|  - Lifecycle Hook Triggers (UserPromptSubmit, SessionStart, PreToolUse)       |
+|  - Developer Terminal CLI (memoryhooker check / diagnose / clear / providers) |
+|  - Automated CI/CD Quality Gates & Multi-OS Test Runners                      |
++---------------------------------------+---------------------------------------+
+                                        | triggers hook payload / query
+                                        v
++-------------------------------------------------------------------------------+
+|  VIEW 2: MEMORYHOOKER SOVEREIGN CORE ENGINE & PIPELINE ORCHESTRATOR           |
+|  - Mode Selector (remember, clue, remember+search, trigger injector)          |
+|  - Ingress Guardrails (session budget caps, cooldown, calendar-day TTL)       |
+|  - Cryptographic Change Gate (SHA-256 digest suppression, min_change = 1.0)   |
+|  - Multi-Backend Dispatcher (USMC, Gardener SQLite FTS5, Files, BACH)        |
++---------------------------------------+---------------------------------------+
+                                        | queries / ranks & filters
+                                        v
++-------------------------------------------------------------------------------+
+|  VIEW 3: RUNTIME PERSISTENCE, SHARED MEMORY SCHEMAS & AUDIT LEDGER            |
+|  - USMC Curated Tables (mode=ro: usmc_facts, usmc_lessons, usmc_working)      |
+|  - Gardener FTS5 Full-Text Index (mode=ro: distilled lessons, transcript cut) |
+|  - Local Markdown Document Roots (normalized TF-coverage saturation)          |
+|  - Shared Trigger Invariants (context_triggers: rule groups & prefixes)       |
++---------------------------------------+---------------------------------------+
+                                        | sanitizes / bounds & emits
+                                        v
++-------------------------------------------------------------------------------+
+|  VIEW 4: AIR-GAP DEFENSE PERIMETER, RUNASINVOKER & ZERO-EGRESS GOVERNANCE     |
+|  - 100% Local-First Offline Operation & Zero Network Sockets (INV-LOCAL-01)   |
+|  - Unprivileged Non-Elevation Security Policy (INV-UNPRIV-03, RunAsInvoker)  |
+|  - Deterministic Privacy Sanitizer (INV-REDACT-04: masks tokens & paths)      |
+|  - Fail-Open Fault Tolerance (INV-FAILOPEN-08) & Output Ceilings (INV-BOUND-05)|
+|  - Level 1 SBOM Transparency & Statutory Disclaimer (§ 521 BGB) & 48h SLA    |
++-------------------------------------------------------------------------------+
+```
 
----
-
-## Comparative Matrix vs Alternatives
-
-| Architectural Criterion | `memoryhooker` | Ad-hoc Python / Shell Scripts | Cloud Vector DB RAG | Chat History Buffer | MemGPT / Letta |
-|:---|:---|:---|:---|:---|:---|
-| **License & Open Source** | **MIT (100% Free & Open Source)** | Unlicensed / Ad-hoc | Commercial SaaS | Built-in / None | Apache 2.0 / SaaS |
-| **Network Egress & Privacy** | **100% Zero-Egress (0 Sockets)** | Variable / Undefined | External Cloud Egress | Local Memory | Remote Server / Cloud |
-| **Latency & Process Overhead** | **<50ms (In-Process / CLI)** | 50–500ms | 100–1000ms+ (RTT) | 0ms (In Prompt) | 200–2000ms (Daemon) |
-| **Security & Privileges** | **Unprivileged (`RunAsInvoker`)** | Uncontrolled | API Token Exposure | Unisolated | Server / Docker Deamons |
-| **Agent Hook Integration** | **Native Snippets (Claude/Codex/Kimi/AGY)** | Fragile Manual Pipes | API Integration Only | Chat Window Only | Custom SDK Wrapper |
-| **Curated Storage Tiers** | **USMC, Gardener FTS5, Markdown Files** | Raw Flat Files Only | Vector Embeddings | Uncurated History | Proprietary Database |
-| **Deterministic Secret Redaction** | **Yes (Secrets & Paths -> `[redacted]`)** | None | None | None | None |
-| **Session Caps & Rate Limiting** | **Yes (Caps, Cooldown, Daily TTL)** | None (Spam Risk) | Cost Limits Only | Context Length Cap | Complex Pagination |
-| **Deterministic Change Gate** | **Yes (SHA-256 Digest Suppression)** | None | None | None | LLM Self-Managed |
-| **Machine-Readable LLM Parity** | **Yes (`llms.txt` + Bilingual Markdown)** | None | Web Documentation | None | Web Documentation |
-
----
-
-## System Architecture Flow
+### System Architecture Flow
 
 ```mermaid
 flowchart TD
@@ -131,6 +148,7 @@ flowchart TD
 
 ---
 
+<a id="sec-03"></a><a id="end-to-end-lifecycle-sequence"></a><a id="end-to-end-lebenszyklus-sequenz"></a>
 ## End-to-End Lifecycle Sequence
 
 ```mermaid
@@ -168,43 +186,39 @@ sequenceDiagram
 
 ---
 
-## Governance & Runtime Invariants
+<a id="sec-04"></a><a id="target-personas--discoverability"></a><a id="zielgruppen--auffindbarkeit"></a>
+## Target Personas & Discoverability
 
-| Invariant ID | Name / Protection | Enforcement Level & Mechanism | Architectural Guarantee & Failure Mode |
+| Persona | Core Profile & Tech Stack | Architectural Friction & Pain Point | How `memoryhooker` Solves It |
 |:---|:---|:---|:---|
-| `INV-LOCAL-01` | **100% Local-First & Zero-Egress** | Architectural / Zero Network Sockets | The core engine imports zero networking libraries and performs no HTTP/TCP/UDP operations. Memory lookups never leave the local machine. |
-| `INV-READONLY-02` | **Read-Only External Storage** | Database Connection Contract (`mode=ro`) | External SQLite databases (Gardener, USMC) are opened strictly in read-only mode; MemoryHooker never creates schemas or mutates third-party data. |
-| `INV-UNPRIV-03` | **Unprivileged User-Mode (RunAsInvoker)** | Process Security Model | Runs entirely under standard user credentials without requesting Administrator or root elevation, ensuring least privilege. |
-| `INV-REDACT-04` | **Deterministic Secret & Path Redaction** | Regex Sanitizer (`memoryhooker.policy`) | Automatically redacts common API keys, passwords, bearer tokens, and absolute local filesystem paths with `[redacted]` before hook emission. |
-| `INV-BOUND-05` | **Strict Field & Message Bounding** | Output Boundary Enforcement | Enforces configurable hard ceilings on text length, source paths, metadata fields, and total hook message characters (`max_message_chars`). |
-| `INV-GATE-06` | **Deterministic Change Gate** | Cryptographic Digest Comparison | Computes SHA-256 digest of sanitized selections; silences identical repeated hits (`min_change = 1.0`) while persisting only hashes—never raw hits. |
-| `INV-SPAM-07` | **Session Rate Limiting & Daily TTL** | SessionState Controller | Enforces `max_injections_per_session` and `cooldown_seconds`. Session state resets automatically across calendar days (`state_date`). |
-| `INV-FAILOPEN-08` | **Fail-Open Hook Fault Tolerance** | Exception Isolation Boundaries | Missing configurations, unavailable backends, or corrupt state files exit cleanly with status code 0 and empty output, never crashing agent turns. |
-| `INV-LLM-09` | **Bilingual Parity & LLM Indexing** | Documentation Architecture | Full 16-point anchor parity between English (`README.md`) and German (`README_de.md`), paired with structured [`llms.txt`](llms.txt). |
-| `INV-SLA-10` | **48-Hour Response & 5-Day Triage SLA** | Security Policy (`SECURITY.md`) | Dedicated security channels (`security@ellmos.ai`, `security@open-bricks.org`) committed to 48-hour response and 5-business-day triage SLA. |
+| **[PERSONA-01] Autonomous AI Coding Agents & Harness Engineers** | Building agent harnesses (Claude Code, Codex CLI, Kimi Code, Antigravity, custom loops). | Blind prompt execution without historical project lessons; context window stuffing causes latency and excessive inference token consumption. | Lifecycle hooks fire tailored memories (`remember`, `clue`, `remember+search`) with strict output bounds and fail-open resilience. |
+| **[PERSONA-02] Local-First & Zero-Egress System Architects** | Managing secure, on-premise, or air-gapped developer environments. | Cloud vector databases (Pinecone, Qdrant Cloud) leak proprietary code fragments, require credentials, and add network failure modes. | 100% Zero-Egress core standard library, zero external sockets, local SQLite `mode=ro` queries, and unprivileged operation (`RunAsInvoker`). |
+| **[PERSONA-03] Multi-Agent Swarm Orchestrators & Context Engineers** | Designing collaborative multi-agent architectures (BACH, USMC, Swarms). | Competing write operations corrupt state; noisy historical transcripts drown out curated lessons and architecture guidelines. | Read-only adapters for curated USMC/Gardener databases, transcript noise filtering, and deterministic multi-source deduplication. |
+| **[PERSONA-04] Compliance, Security & Enterprise DevOps Officers** | Regulating enterprise AI security boundaries and preventing data leakage. | Prompts and logs inadvertently expose secret API keys, internal paths, or unconstrained state growth across developer machines. | Deterministic regex redaction of secrets/tokens and paths, strict output caps, daily state TTL resets, and transparent audit logs. |
+
+**High-Intent Discovery Keywords & Topic Tags:** `coding-agent-memory-hook`, `local-first-memory-retrieval`, `llm-agent-hook-reminders`, `claude-code-memory-integration`, `codex-hook-memory`, `zero-egress-ai-memory`, `sqlite-fts5-agent-memory`, `deterministic-context-injection`, `privacy-safe-llm-hook`, `usmc-memory-backend`.
 
 ---
 
-## Supported Providers & Snippets
+<a id="sec-05"></a><a id="comparative-matrix-vs-alternatives"></a><a id="vergleichsmatrix-gegenüber-alternativen"></a>
+## Comparative Matrix vs Alternatives
 
-MemoryHooker generates configuration fragments tailored for host agent lifecycle hooks:
-
-```shell
-# Inspect available providers
-python -m memoryhooker providers
-
-# Generate configuration snippet for specific coding agent
-python -m memoryhooker install-snippet --provider claude
-python -m memoryhooker install-snippet --provider codex
-python -m memoryhooker install-snippet --provider kimi
-python -m memoryhooker install-snippet --provider agy
-```
-
-> [!IMPORTANT]
-> `install-snippet` prints the exact hook configuration fragment to stdout. In accordance with `INV-UNPRIV-03` and safety principles, it never mutates host configuration files automatically. Review and merge the snippet manually into your agent settings.
+| Architectural Criterion | Invariant Reference | `memoryhooker` | Ad-hoc Scripts | Cloud Vector DB RAG | Chat History Buffer | MemGPT / Letta |
+|:---|:---|:---|:---|:---|:---|:---|
+| **License & Open Source** | Open Source | **MIT (100% Free)** | Unlicensed | Commercial SaaS | Built-in / None | Apache 2.0 / SaaS |
+| **Network Egress & Privacy** | `INV-LOCAL-01` | **100% Zero-Egress (0 Sockets)** | Variable | Cloud Vector DB RAG | Local Memory | Remote Server / Cloud |
+| **Storage Mutability** | `INV-READONLY-02` | **Strictly Read-Only (`mode=ro`)** | Uncontrolled | Managed Cloud | Ephemeral Prompt | Read/Write SQLite |
+| **Security & Privilege** | `INV-UNPRIV-03` | **Unprivileged (`RunAsInvoker`)** | Uncontrolled | API Token Exposure | Unisolated | Server / Daemon |
+| **Deterministic Redaction** | `INV-REDACT-04` | **Yes (Tokens/Paths -> `[redacted]`)**| None | None | None | None |
+| **Output Length Ceilings** | `INV-BOUND-05` | **Configurable Hard Ceilings** | None | Raw Payload | Context Cap | Complex Pagination |
+| **Deterministic Change Gate** | `INV-GATE-06` | **Yes (SHA-256 Suppression)** | None | None | None | LLM Self-Managed |
+| **Session Cap & Rate Limit** | `INV-SPAM-07` | **Yes (Caps, Cooldown, Daily TTL)**| None | Cost Limits | Window Cutoff | Daemon Rate Limit |
+| **Fault Tolerance & Safety** | `INV-FAILOPEN-08` | **Fail-Open (Never Crashes Turn)** | Fatal Errors | Network Failures | Context Loss | Daemon Crashes |
+| **Binding Security SLA** | `INV-SLA-10` | **Binding 48h Response SLA** | None | Commercial Tier | None | Community Best Effort |
 
 ---
 
+<a id="sec-06"></a><a id="memory-backends--ranking"></a><a id="speicher-backends--ranking"></a>
 ## Memory Backends & Ranking
 
 MemoryHooker connects to multiple retrieval backends configured in `memoryhooker.toml`:
@@ -223,6 +237,25 @@ A reserved adapter for upcoming BACH ecosystem integration. Currently fails open
 
 ---
 
+<a id="sec-07"></a><a id="governance--runtime-invariants"></a><a id="governance---laufzeit-invarianten"></a>
+## Governance & Runtime Invariants
+
+| Invariant ID | Name / Protection | Enforcement Level & Mechanism | Architectural Guarantee & Failure Mode |
+|:---|:---|:---|:---|
+| `INV-LOCAL-01` | **100% Local-First & Zero-Egress** | Architectural / Zero Network Sockets | The core engine imports zero networking libraries and performs no HTTP/TCP/UDP operations. Memory lookups never leave the local machine. |
+| `INV-READONLY-02` | **Read-Only External Storage** | Database Connection Contract (`mode=ro`) | External SQLite databases (Gardener, USMC) are opened strictly in read-only mode; MemoryHooker never creates schemas or mutates third-party data. |
+| `INV-UNPRIV-03` | **Unprivileged User-Mode (RunAsInvoker)** | Process Security Model | Runs entirely under standard user credentials without requesting Administrator or root elevation, ensuring least privilege. |
+| `INV-REDACT-04` | **Deterministic Secret & Path Redaction** | Regex Sanitizer (`memoryhooker.policy`) | Automatically redacts common API keys, passwords, bearer tokens, and absolute local filesystem paths with `[redacted]` before hook emission. |
+| `INV-BOUND-05` | **Strict Field & Message Bounding** | Output Boundary Enforcement | Enforces configurable hard ceilings on text length, source paths, metadata fields, and total hook message characters (`max_message_chars`). |
+| `INV-GATE-06` | **Deterministic Change Gate** | Cryptographic Digest Comparison | Computes SHA-256 digest of sanitized selections; silences identical repeated hits (`min_change = 1.0`) while persisting only hashes—never raw hits. |
+| `INV-SPAM-07` | **Session Rate Limiting & Daily TTL** | SessionState Controller | Enforces `max_injections_per_session` and `cooldown_seconds`. Session state resets automatically across calendar days (`state_date`). |
+| `INV-FAILOPEN-08` | **Fail-Open Hook Fault Tolerance** | Exception Isolation Boundaries | Missing configurations, unavailable backends, or corrupt state files exit cleanly with status code 0 and empty output, never crashing agent turns. |
+| `INV-LLM-09` | **Bilingual Parity & LLM Indexing** | Documentation Architecture | Full 18-point anchor parity between English (`README.md`) and German (`README_de.md`), paired with structured [`llms.txt`](llms.txt). |
+| `INV-SLA-10` | **48-Hour Response & 5-Day Triage SLA** | Security Policy (`SECURITY.md`) | Dedicated security channels (`security@ellmos.ai`, `security@open-bricks.org`) committed to 48-hour response and 5-business-day triage SLA. |
+
+---
+
+<a id="sec-08"></a><a id="modes--configuration"></a><a id="betriebsmodi--konfiguration"></a>
 ## Modes & Configuration
 
 Create `memoryhooker.toml` in your project root or user home:
@@ -293,7 +326,29 @@ context = "[KONTEXT] "
 
 ---
 
-## Privacy, Redaction & Gates
+<a id="sec-09"></a><a id="supported-providers--snippets"></a><a id="unterstützte-provider--snippets"></a>
+## Supported Providers & Snippets
+
+MemoryHooker generates configuration fragments tailored for host agent lifecycle hooks:
+
+```shell
+# Inspect available providers
+python -m memoryhooker providers
+
+# Generate configuration snippet for specific coding agent
+python -m memoryhooker install-snippet --provider claude
+python -m memoryhooker install-snippet --provider codex
+python -m memoryhooker install-snippet --provider kimi
+python -m memoryhooker install-snippet --provider agy
+```
+
+> [!IMPORTANT]
+> `install-snippet` prints the exact hook configuration fragment to stdout. In accordance with `INV-UNPRIV-03` and safety principles, it never mutates host configuration files automatically. Review and merge the snippet manually into your agent settings.
+
+---
+
+<a id="sec-10"></a><a id="privacy-redaction--change-gates"></a><a id="datenschutz-redigierung--änderungs-gatter"></a>
+## Privacy, Redaction & Change Gates
 
 MemoryHooker treats prompt content and retrieved records with defensive data isolation:
 
@@ -303,6 +358,7 @@ MemoryHooker treats prompt content and retrieved records with defensive data iso
 
 ---
 
+<a id="sec-11"></a><a id="command-line--diagnostics"></a><a id="kommandozeile--diagnose"></a>
 ## Command Line & Diagnostics
 
 ```shell
@@ -323,7 +379,8 @@ By design, `check` and `hook-run` exit silently with code 0 when no relevant hit
 
 ---
 
-## Verification & Tests
+<a id="sec-12"></a><a id="verification--test-suite"></a><a id="verifikation--test-suite"></a>
+## Verification & Test Suite
 
 ```powershell
 # Run full automated test suite
@@ -336,11 +393,12 @@ python -m ruff check .
 python -m compileall -q memoryhooker tests
 ```
 
-Over 210 automated unit, integration, and contract tests validate incremental retrieval, FTS5 queries, USMC table curation, deterministic redaction, session rate limiting, and manifest parity.
+Over 213 automated unit, integration, behavioral, and contract tests validate incremental retrieval, FTS5 queries, USMC table curation, deterministic redaction, session rate limiting, and manifest parity with 100% green status.
 
 ---
 
-## Sibling Ecosystem & Partner Modules
+<a id="sec-13"></a><a id="sibling-ecosystem--partner-matrix"></a><a id="geschwister-ökosystem--partnermatrix"></a>
+## Sibling Ecosystem & Partner Matrix
 
 MemoryHooker is a core component of the `ellmos-ai` ecosystem under the `open-bricks` open-source umbrella:
 
@@ -365,18 +423,35 @@ MemoryHooker is a core component of the `ellmos-ai` ecosystem under the `open-br
 
 ---
 
-## Third-Party Licenses & Transparency
+<a id="sec-14"></a><a id="third-party-licenses--level-1-sbom"></a><a id="drittanbieter-lizenzen--level-1-sbom"></a>
+## Third-Party Licenses & Level 1 SBOM
 
 MemoryHooker maintains an audited inventory of runtime components and developer tooling in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (plain-text companion: [`THIRD_PARTY_LICENSES.txt`](THIRD_PARTY_LICENSES.txt)) and canonical attribution in [`NOTICE`](NOTICE). All runtime code relies on permissive components (MIT and PSFL-2.0), with development dependencies under MIT and Apache-2.0. There are **zero copyleft dependencies**. Target personas, search keywords, and competitive analysis are tracked in [`MARKETING-LOG.txt`](MARKETING-LOG.txt).
 
 ---
 
-## Security Policy & SLA
+<a id="sec-15"></a><a id="security-policy--48h-sla"></a><a id="sicherheitsrichtlinie--48h-sla"></a>
+## Security Policy & 48h SLA
 
-MemoryHooker maintains a strict vulnerability disclosure policy in [`SECURITY.md`](SECURITY.md). We commit to a **48-hour response SLA** and a **5-business-day triage window** for confidential security disclosures submitted through GitHub Security Advisories or to `security@ellmos.ai`.
+MemoryHooker maintains a strict vulnerability disclosure policy in [`SECURITY.md`](SECURITY.md). We commit to a **48-hour response SLA** and a **5-business-day triage window** for confidential security disclosures submitted through GitHub Security Advisories or to `security@ellmos.ai` and `security@open-bricks.org`.
 
 ---
 
-## License & Provenance
+<a id="sec-16"></a><a id="machine-readable-context--llmstxt"></a><a id="maschinenlesbarer-kontext--llmstxt"></a>
+## Machine-Readable Context & llms.txt
 
-This project is open-source software licensed under the terms of the [MIT License](LICENSE). Detailed clean-history statements and architectural lineage are documented in [PROVENANCE.md](PROVENANCE.md).
+This repository provides a machine-readable context file at [`llms.txt`](llms.txt) adhering to standard agent indexing specifications. It exposes core repository invariants, provider endpoints, and file maps designed for direct consumption by autonomous agents and LLM harnesses.
+
+---
+
+<a id="sec-17"></a><a id="author-attribution--canonical-notice"></a><a id="autor-attribution--kanonische-notice"></a>
+## Author, Attribution & Canonical Notice
+
+MemoryHooker is authored and maintained by **Lukas Geiger** and contributors as part of the **ellmos-ai** organization under the **open-bricks** open-source initiative. Detailed provenance statements, architectural lineage, and canonical copyright claims are formalized in [`NOTICE`](NOTICE) and [`PROVENANCE.md`](PROVENANCE.md).
+
+---
+
+<a id="sec-18"></a><a id="statutory-disclaimer--521-bgb--license"></a><a id="gesetzlicher-haftungsausschluss--521-bgb--lizenz"></a>
+## Statutory Disclaimer (§ 521 BGB) & License
+
+This software is provided free of charge under the terms of the [MIT License](LICENSE). Under German statutory provisions governing gratuitous contracts and services (§ 521 BGB Gefälligkeitsrecht), liability for defects in quality and legal title is restricted to instances of fraudulent concealment (*Arglist*) or intent (*Vorsatz*). The software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

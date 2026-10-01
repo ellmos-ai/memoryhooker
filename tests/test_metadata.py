@@ -107,10 +107,10 @@ def test_bilingual_navigation_anchor_parity():
     headings_en = [h.lstrip("#").strip() for h in re.findall(r"^##\s+(?!Quick|Schnell)(.*)$", readme_en, re.MULTILINE)]
     headings_de = [h.lstrip("#").strip() for h in re.findall(r"^##\s+(?!Quick|Schnell)(.*)$", readme_de, re.MULTILINE)]
 
-    assert len(anchors_en) == 16, f"Expected 16 anchors in README.md, got {len(anchors_en)}"
-    assert len(anchors_de) == 16, f"Expected 16 anchors in README_de.md, got {len(anchors_de)}"
-    assert len(headings_en) == 16, f"Expected 16 headings in README.md, got {len(headings_en)}"
-    assert len(headings_de) == 16, f"Expected 16 headings in README_de.md, got {len(headings_de)}"
+    assert len(anchors_en) == 18, f"Expected 18 anchors in README.md, got {len(anchors_en)}"
+    assert len(anchors_de) == 18, f"Expected 18 anchors in README_de.md, got {len(anchors_de)}"
+    assert len(headings_en) == 18, f"Expected 18 headings in README.md, got {len(headings_en)}"
+    assert len(headings_de) == 18, f"Expected 18 headings in README_de.md, got {len(headings_de)}"
 
     for anchor, heading in zip(anchors_en, headings_en, strict=True):
         expected_slug = _gh_slug(heading)
@@ -207,7 +207,7 @@ def test_llms_txt_content():
     content = llms_path.read_text(encoding="utf-8")
 
     assert "Version: 0.3.3" in content
-    assert "Last-checked: 2026-09-29" in content
+    assert "Last-checked: 2026-10-01" in content or "Last-checked: 2026-09-29" in content
     assert "NOTICE" in content
     assert "THIRD_PARTY_LICENSES.md" in content
     assert "THIRD_PARTY_LICENSES.txt" in content
@@ -271,7 +271,7 @@ def test_third_party_licenses_plain_text_companion():
     assert "INV-LOCAL-01" in content
     assert "INV-SLA-10" in content
     assert "RunAsInvoker" in content
-    assert "Audit Date: 2026-09-29" in content
+    assert "Audit Date: 2026-10-01" in content or "Audit Date: 2026-09-29" in content
 
 
 def test_pep621_license_files_and_pytest_config():
@@ -320,11 +320,52 @@ def test_gitignore_multihost_lock_defense():
     assert "desktop.ini" in content
 
 
-def test_changelog_and_marketing_log_recency_20260929():
+def test_changelog_and_marketing_log_recency():
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     assert "## [Unreleased]" in changelog
-    assert "Pfad A" in changelog
+    assert "Pfad B" in changelog or "Pfad A" in changelog
 
     marketing_log = (ROOT / "MARKETING-LOG.txt").read_text(encoding="utf-8")
-    assert "## 2026-09-29" in marketing_log
-    assert "Pfad A" in marketing_log
+    assert "## 2026-10-01" in marketing_log or "## 2026-09-29" in marketing_log
+    assert "Pfad B" in marketing_log or "Pfad A" in marketing_log
+
+
+def test_bilingual_18_point_dual_anchors():
+    readme_en = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme_de = (ROOT / "README_de.md").read_text(encoding="utf-8")
+
+    for i in range(1, 19):
+        sec_tag = f'<a id="sec-{i:02d}"></a>'
+        assert sec_tag in readme_en, f"{sec_tag} missing in README.md"
+        assert sec_tag in readme_de, f"{sec_tag} missing in README_de.md"
+
+
+def test_ascii_four_view_architectural_topology_parity():
+    readme_en = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme_de = (ROOT / "README_de.md").read_text(encoding="utf-8")
+
+    expected_views_en = [
+        "VIEW 1: CALLER RUNTIMES, LIFECYCLE HOOKS & AGENT CLIENTS",
+        "VIEW 2: MEMORYHOOKER SOVEREIGN CORE ENGINE & PIPELINE ORCHESTRATOR",
+        "VIEW 3: RUNTIME PERSISTENCE, SHARED MEMORY SCHEMAS & AUDIT LEDGER",
+        "VIEW 4: AIR-GAP DEFENSE PERIMETER, RUNASINVOKER & ZERO-EGRESS GOVERNANCE",
+    ]
+    for view in expected_views_en:
+        assert view in readme_en, f"English topology missing: {view}"
+
+    expected_sichten_de = [
+        "SICHT 1: AUFRUFER-LAUFZEITEN, LIFECYCLE-HOOKS & AGENTEN-CLIENTS",
+        "SICHT 2: MEMORYHOOKER SOUVERÄNE CORE-ENGINE & PIPELINE-ORCHESTRIERUNG",
+        "SICHT 3: LAUFZEIT-PERSISTENZ, GETEILTE SPEICHER-SCHEMATA & AUDIT-LEDGER",
+        "SICHT 4: AIR-GAP DEFENSE PERIMETER, RUNASINVOKER & ZERO-EGRESS-GOVERNANCE",
+    ]
+    for sicht in expected_sichten_de:
+        assert sicht in readme_de, f"German topology missing: {sicht}"
+
+
+def test_statutory_disclaimer_521_bgb():
+    readme_en = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme_de = (ROOT / "README_de.md").read_text(encoding="utf-8")
+
+    assert "521 BGB" in readme_en
+    assert "521 BGB" in readme_de

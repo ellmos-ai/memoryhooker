@@ -3,30 +3,31 @@
 Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
 
 Version: 0.3.3
-Last-checked: 2026-09-29
+Last-checked: 2026-10-01
 Ecosystem: ellmos-ai
 Umbrella: open-bricks
 
 ## Important files
 
-- README.md: Public usage, visual architecture, configuration, providers, backends, and comparative matrix.
-- README_de.md: Deutsche Dokumentation mit vollständiger 16-Punkte-Anker-Parität.
+- README.md: Public usage, visual architecture (Four-View ASCII topology), configuration, providers, backends, and comparative matrix.
+- README_de.md: Deutsche Dokumentation mit vollständiger 18-Punkte-Anker-Parität und ASCII-Vier-Ansichten-Architekturprojektion.
 - NOTICE: Canonical open-source attribution notice and ecosystem heritage.
 - SECURITY.md: Private vulnerability-reporting requirements, threat model, and 48-hour response SLA.
 - THIRD_PARTY_LICENSES.md: Audited permissive licenses (PSFL-2.0, MIT, Apache-2.0) and Level 1 SBOM invariant mapping.
-- THIRD_PARTY_LICENSES.txt: Plain-text Level 1 SBOM dependency inventory and invariant certifications.
+- THIRD_PARTY_LICENSES.txt: Plain-text Level 1 SBOM dependency inventory and invariant certifications (INV-LOCAL-01..INV-SLA-10).
 - MARKETING-LOG.txt: Target personas, discoverability keywords, and comparative matrix audit.
 - PROVENANCE.md: Clean-history and BACH lineage statement.
 - memoryhooker/config.py: Configuration schema, mode definitions, and safe defaults.
 - memoryhooker/backends/: Local read-only retrieval adapters (USMC, Gardener, Files, BACH).
 - memoryhooker/providers/: Host-specific snippet generators (Claude Code, Codex, Kimi, Antigravity, Git, manual).
-- tests/: 210+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
+- tests/: 213+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
 
 ## Safety properties
 
-- The package performs no network requests (100% Zero-Egress).
+- The package performs no network requests (100% Zero-Egress, INV-LOCAL-01).
 - Host configuration is never edited automatically (`install-snippet` prints manual instructions).
-- The Gardener and USMC backends open configured databases strictly read-only (`mode=ro`).
-- Deterministic privacy boundary redacts secret tokens and absolute paths before emission.
-- Session cap, cooldown, and calendar-day TTL prevent runaway injection loops.
-- Unavailable backends fail open and produce no hits without disrupting the agent harness.
+- The Gardener and USMC backends open configured databases strictly read-only (`mode=ro`, INV-READONLY-02).
+- Deterministic privacy boundary redacts secret tokens and absolute paths before emission (INV-REDACT-04).
+- Session cap, cooldown, and calendar-day TTL prevent runaway injection loops (INV-SPAM-07).
+- Unavailable backends fail open and produce no hits without disrupting the agent harness (INV-FAILOPEN-08).
+- Unprivileged user-mode execution without administrative elevation (RunAsInvoker, INV-UNPRIV-03).

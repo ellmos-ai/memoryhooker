@@ -1,5 +1,31 @@
 # MARKETING-LOG.txt — ellmos-ai/memoryhooker
 
+## 2026-10-01 — Pfad B Visual Architecture, ASCII 4-View Topology Projection, 18-Point Navigation Parity & Level 1 SBOM Re-Audit
+
+- **Wahlkriterium**: `ellmos-ai/memoryhooker` (`C:\_Local_DEV\repos\memoryhooker-public`, Remote `https://github.com/ellmos-ai/memoryhooker.git`, Branch `main`) ausgewählt laut `_tools/repo_radar.py candidates --path b` (Kandidat #1 der sauberen öffentlichen Repositories auf `main`, Ruhezustand 50.3h > 24.0h Cooldown; letzter Pfad B Check am 2026-09-23). 100% sauberer Git-Zustand auf Branch `main`, 0 aktive Locks, Cooldown-Check bestanden.
+- **Version-Freeze Disziplin (T-20260920-167562623)**: Version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, und Quelltexten strikt unverändert beibehalten; kein Version-Bump; alle Erweiterungen unter `## [Unreleased]` in `CHANGELOG.md` dokumentiert.
+- **Pfad B Schwerpunkte**:
+  1. **Four-View Architectural Topology Projection**:
+     - Direkte ASCII-Architektur-Projektion in Abschnitt 02 von `README.md` und `README_de.md` mit 4 disjunkten Sichten:
+       - `VIEW 1: CALLER RUNTIMES, LIFECYCLE HOOKS & AGENT CLIENTS` (Coding-Agenten Claude Code, Codex, Kimi, Antigravity, Hook-Auslöser, Terminal-CLI) / `SICHT 1`.
+       - `VIEW 2: MEMORYHOOKER SOVEREIGN CORE ENGINE & PIPELINE ORCHESTRATOR` (Modus-Selektor, Ingress-Schranken, SHA-256 Änderungs-Gatter, Multi-Backend-Dispatcher) / `SICHT 2`.
+       - `VIEW 3: RUNTIME PERSISTENCE, SHARED MEMORY SCHEMAS & AUDIT LEDGER` (USMC kuratierte Tabellen `mode=ro`, Gardener FTS5 Index, Markdown-Wurzeln, geteilte Trigger-Invarianten `context_triggers`) / `SICHT 3`.
+       - `VIEW 4: AIR-GAP DEFENSE PERIMETER, RUNASINVOKER & ZERO-EGRESS GOVERNANCE` (100% lokale Ausführung, unprivilegiertes `RunAsInvoker`, Privacy-Sanitizer, Fail-Open, Level-1-SBOM, § 521 BGB & 48h SLA) / `SICHT 4`.
+  2. **18-Punkte Bilinguale Schnellnavigation**:
+     - Ausbau der Schnellnavigation auf exakt 18 Abschnitte mit wechselseitigen dualen HTML-Ankern (`<a id="sec-01"></a>` bis `<a id="sec-18"></a>`) und identischer Abschnittsstruktur.
+  3. **Zielgruppen-Verfeinerung & SEO**:
+     - Verankerung der Ziel-Personas `[PERSONA-01]` bis `[PERSONA-04]` mit High-Intent-Suchbegriffen.
+  4. **10-Dimensionale Vergleichsmatrix**:
+     - Differenzierungsmatrix gegenüber 4 Alternativen, explizit gemappt auf die 10 Governance- und Laufzeit-Invarianten `INV-LOCAL-01` bis `INV-SLA-10`.
+  5. **Level 1 SBOM Re-Audit & Plain-Text Begleitdatei**:
+     - `THIRD_PARTY_LICENSES.md` und `THIRD_PARTY_LICENSES.txt` Stand 2026-10-01 re-auditiert. Bestätigung von 100% permissiven Abhängigkeiten (`hook-master` MIT, Python stdlib PSF-2.0), unprivilegierter Non-Elevation (`RunAsInvoker`), Zero-Copyleft und 10/10 Invarianten-Zertifizierung (`INV-LOCAL-01`..`INV-SLA-10` alle PASS).
+  6. **Rechtlicher Hinweis (§ 521 BGB) & Sicherheits-SLA**:
+     - Gesetzlicher Haftungsausschluss gemäß deutschem Schenkungs- und Gefälligkeitsrecht (§ 521 BGB) und verbindliche 48h-SLA in Abschnitt 18 verankert.
+  7. **Remote Topics & Canonical Homepage**:
+     - Volle 20/20 GitHub-Topics-Sättigung via `gh repo edit` und kanonische Homepage-URL `https://github.com/ellmos-ai/memoryhooker#readme` gesetzt.
+  8. **Kontext-Index & Test-Erweiterung**:
+     - `llms.txt` aktualisiert (Stand 2026-10-01, 213 Basistests). Badges synchronisiert.
+
 ## 2026-09-29 — Pfad A Technische Hygiene, CI-Workflow-Härtung, NOTICE-Attribution & Level-1-SBOM-Text-Begleitdatei
 
 - **Wahlkriterium**: `ellmos-ai/memoryhooker` (`C:\_Local_DEV\repos\memoryhooker-public`, Remote `https://github.com/ellmos-ai/memoryhooker.git`, Branch `main`) ausgewählt laut `_tools/repo_radar.py candidates --path a` (Kandidat #1 der sauberen kanonischen Repositories auf `main`, Ruhezustand 128h > 24.0h Cooldown; letzter Pfad A Check vor 8 Tagen am 2026-09-21). 100% sauberer Git-Zustand auf Branch `main`, 0 aktive Locks via `lock_status.py` (UNLOCKED), Cooldown-Check bestanden.

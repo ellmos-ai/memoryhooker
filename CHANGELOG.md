@@ -4,6 +4,19 @@ All notable public changes are documented in this file.
 
 ## [Unreleased]
 
+### Discoverability, Visual Architecture, ASCII 4-View Topology & Level 1 SBOM Re-Audit (Pfad B Stand 2026-10-01)
+
+- **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code strictly frozen; 0 version diffs.
+- **ASCII Four-View Architectural Topology Projection**: Integrated Four-View architectural topology projection in Section 02 of `README.md` and `README_de.md` (`VIEW 1: CALLER RUNTIMES, LIFECYCLE HOOKS & AGENT CLIENTS`, `VIEW 2: MEMORYHOOKER SOVEREIGN CORE ENGINE & PIPELINE ORCHESTRATOR`, `VIEW 3: RUNTIME PERSISTENCE, SHARED MEMORY SCHEMAS & AUDIT LEDGER`, `VIEW 4: AIR-GAP DEFENSE PERIMETER, RUNASINVOKER & ZERO-EGRESS GOVERNANCE`; German `SICHT 1`..`SICHT 4`).
+- **18-Point Bilingual Navigation Parity**: Upgraded quick navigation in `README.md` and `README_de.md` from 16 to 18 points with reciprocal dual HTML anchors (`<a id="sec-01"></a>` through `<a id="sec-18"></a>`) and exact slug synchronization.
+- **Target Personas & SEO Discovery**: Highlighted target personas (`[PERSONA-01]` through `[PERSONA-04]`) and high-intent search queries across both languages.
+- **10-Dimensional Comparative Matrix**: Refined comparative differentiation matrix against 4 alternatives mapped across runtime invariants `INV-LOCAL-01` through `INV-SLA-10`.
+- **Level 1 SBOM Re-Audit & Plain-Text Companion**: Re-audited `THIRD_PARTY_LICENSES.md` and `THIRD_PARTY_LICENSES.txt` Stand 2026-10-01 certifying 100% permissive runtime (`hook-master` MIT, Python stdlib PSF-2.0), zero copyleft, unprivileged `RunAsInvoker` execution, and 10/10 invariant compliance (`INV-LOCAL-01`..`INV-SLA-10` all PASS).
+- **Statutory Legal Notice & Security SLA**: Formalized statutory disclaimer under German law (§ 521 BGB Gefälligkeitsrecht) and 48-hour security response SLA in Section 18 of both READMEs.
+- **Remote Discoverability Saturation**: Saturated 20/20 GitHub repository topics via `gh repo edit` and configured canonical repository homepage URL (`https://github.com/ellmos-ai/memoryhooker#readme`). Aligned PEP 621 homepage URL in `pyproject.toml`.
+- **Context Index & Shields.io Badges**: Updated `llms.txt` with Stand 2026-10-01 and 213 verified tests baseline. Synchronized verification badges (`Verified: 2026-10-01`, `213 passed | 100% green`).
+- **Automated Contract Tests**: Expanded `tests/test_metadata.py` with 18-point dual anchor parity, ASCII 4-view topology projection, § 521 BGB disclaimer, and audit recency contract tests.
+
 ### Repository Hygiene, CI Lifecycle Workflows & Level 1 SBOM Text Companion (Pfad A)
 
 - **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code unchanged.

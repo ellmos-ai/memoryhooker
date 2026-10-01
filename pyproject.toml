@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ellmos-ai/memoryhooker"
+Homepage = "https://github.com/ellmos-ai/memoryhooker#readme"
 Repository = "https://github.com/ellmos-ai/memoryhooker"
 Documentation = "https://github.com/ellmos-ai/memoryhooker#readme"
 Issues = "https://github.com/ellmos-ai/memoryhooker/issues"
