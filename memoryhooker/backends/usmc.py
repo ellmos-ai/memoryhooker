@@ -283,17 +283,44 @@ class UsmcBackend:
         return results
 
     def _search_facts(self, conn: sqlite3.Connection, terms: list[str], limit: int) -> list[Hit]:
-        where, params = self._where_any_term(terms, ("key", "value"))
+        has_consolidation = False
         try:
-            rows = conn.execute(
-                f"""
-                SELECT id, category, key, value, confidence, agent_id, updated_at
-                FROM usmc_facts
-                WHERE {where}
-                LIMIT ?
-                """,
-                (*params, max(limit * 20, 50)),
-            ).fetchall()
+            has_consolidation = bool(
+                conn.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type IN ('table', 'view') AND name='memory_consolidation'"
+                ).fetchone()
+            )
+        except sqlite3.Error:
+            has_consolidation = False
+
+        try:
+            if has_consolidation:
+                where_f, params_f = self._where_any_term(terms, ("f.key", "f.value"))
+                rows = conn.execute(
+                    f"""
+                    SELECT f.id, f.category, f.key, f.value, f.confidence, f.agent_id, f.updated_at
+                    FROM usmc_facts f
+                    LEFT JOIN memory_consolidation mc
+                      ON mc.source_table IN ('usmc_facts', 'memory_facts') AND mc.source_id = f.id
+                    WHERE (mc.status IS NULL OR mc.status != 'forgotten')
+                      AND (f.confidence IS NULL OR f.confidence > 0.0)
+                      AND {where_f}
+                    LIMIT ?
+                    """,
+                    (*params_f, max(limit * 20, 50)),
+                ).fetchall()
+            else:
+                where_plain, params_plain = self._where_any_term(terms, ("key", "value"))
+                rows = conn.execute(
+                    f"""
+                    SELECT id, category, key, value, confidence, agent_id, updated_at
+                    FROM usmc_facts
+                    WHERE (confidence IS NULL OR confidence > 0.0)
+                      AND {where_plain}
+                    LIMIT ?
+                    """,
+                    (*params_plain, max(limit * 20, 50)),
+                ).fetchall()
         except sqlite3.Error:
             return []
 
@@ -305,6 +332,8 @@ class UsmcBackend:
             if quality <= 0:
                 continue
             confidence = row["confidence"] if row["confidence"] is not None else 0.0
+            if row["confidence"] is not None and confidence <= 0.0:
+                continue
             weight = 0.5 + 0.45 * max(0.0, min(1.0, confidence))
             text = f"{row['key']}: {row['value']}"
             results.append(
