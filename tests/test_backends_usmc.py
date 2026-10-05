@@ -409,3 +409,59 @@ def test_evaluate_prompt_delivers_fresh_usmc_lesson_into_session(tmp_path: Path)
     assert message is not None
     assert "Zustellkette" in message
     assert state.injections_count == 1
+
+
+def test_search_excludes_zero_confidence_facts(tmp_path: Path) -> None:
+    db_path = tmp_path / "usmc_memory.db"
+    conn = _make_db(db_path)
+    _insert_fact(conn, category="system", key="platform", value="linux-arm64", confidence=0.0)
+    _insert_fact(conn, category="system", key="editor", value="neovim", confidence=0.8)
+    conn.close()
+
+    backend = UsmcBackend(db_path)
+    hits_zero = backend.search("platform")
+    assert hits_zero == []
+
+    hits_active = backend.search("editor")
+    assert len(hits_active) == 1
+    assert "neovim" in hits_active[0].text
+
+
+def test_search_excludes_forgotten_consolidation_facts(tmp_path: Path) -> None:
+    db_path = tmp_path / "usmc_memory.db"
+    conn = _make_db(db_path)
+    conn.execute(
+        """
+        CREATE TABLE memory_consolidation (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_table TEXT NOT NULL,
+            source_id INTEGER NOT NULL,
+            status TEXT DEFAULT 'active'
+        )
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO usmc_facts (id, category, key, value, confidence, source, agent_id, created_at, updated_at)
+        VALUES (10, 'system', 'hostname', 'asus-laptop', 1.0, 'cli', 'cli', '2026-08-16', '2026-08-16'),
+               (11, 'user', 'username', 'lukisch', 1.0, 'cli', 'cli', '2026-08-16', '2026-08-16')
+        """
+    )
+    conn.execute(
+        "INSERT INTO memory_consolidation (source_table, source_id, status) VALUES ('memory_facts', 10, 'forgotten')"
+    )
+    conn.execute(
+        "INSERT INTO memory_consolidation (source_table, source_id, status) VALUES ('memory_facts', 11, 'active')"
+    )
+    conn.commit()
+    conn.close()
+
+    backend = UsmcBackend(db_path)
+    hits_forgotten = backend.search("hostname")
+    assert hits_forgotten == []
+
+    hits_active = backend.search("username")
+    assert len(hits_active) == 1
+    assert "lukisch" in hits_active[0].text
+
+
