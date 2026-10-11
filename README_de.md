@@ -408,7 +408,8 @@ MemoryHooker ist eine Kernkomponente des `ellmos-ai`-Ökosystems unter dem Open-
 | **Indexierung & Beobachtung** | `gardener` | Inkrementelle Dateiindexierung, Wissenskonsolidierung und SQLite-Textsuche |
 | **Lifecycle-Hooks & Orchestrierung**| `workflowhooker` | Deklarative Workflow-Hooks und Orchestrierungs-Auslöser für Agenten-Pipelines |
 | **Kern- & Grundsatz-Protokolle** | `ellmos-core` | Kern-Fähigkeitsdeskriptoren, Modulverträge und grundlegende Abstraktionen |
-| **Multi-Agenten-Zustandssicherung** | `clutch`, `coma` | Agenten-Zustandssicherung, Ausführungs-Snapshots und Kontext-Kompaktierung |
+| **Multi-Agenten-Zustandssicherung** | `clutch` | Agenten-Zustandssicherung, Ausführungs-Snapshots und Kontext-Kompaktierung |
+| **Lokale Agentenjob-Koordination** | [COMA](https://github.com/ellmos-ai/coma) | Lokale dateibasierte Jobkoordination sowie Start und Statusabfrage für Agentenprozesse; ergänzt MemoryHookers Sitzungs-Gedächtnis-Hooks. |
 | **Planung & Ausführung** | `ellmos-scheduler` | Lokaler Cron-, Intervall- und autoritätsgepachteter Hintergrund-Job-Runner |
 | **Steuerung & Governance** | `ellmos-controlcenter-mcp` | Fähigkeits-Routing, Stack-Erkennung und Werkzeug-Mediation |
 | **Code-Intelligenz** | `ellmos-codecommander-mcp` | Strukturelle Code-Manipulation, Import-Diagnostik und AST-Analyse |

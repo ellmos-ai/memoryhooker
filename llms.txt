@@ -31,3 +31,7 @@ Umbrella: open-bricks
 - Session cap, cooldown, and calendar-day TTL prevent runaway injection loops (INV-SPAM-07).
 - Unavailable backends fail open and produce no hits without disrupting the agent harness (INV-FAILOPEN-08).
 - Unprivileged user-mode execution without administrative elevation (RunAsInvoker, INV-UNPRIV-03).
+
+## Related projects
+
+- [COMA](https://github.com/ellmos-ai/coma): Local file-based job coordination and agent process startup/status, complementary to MemoryHooker's session-memory hooks.
