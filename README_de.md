@@ -25,7 +25,7 @@
 
 > [!NOTE]
 > **KI- & Agenten-Indexierung:** Dieses Repository bietet eine maschinenlesbare [`llms.txt`](llms.txt)-Zusammenfassung für KI-Agenten, LLM-Werkzeuge und Lifecycle-Hooks.
-> **Beitragen:** Die Entwicklung findet im privaten Twin `memoryhooker-provenance` statt; dieses Repository trägt die kuratierte Open-Source-Distribution. Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
+> **Beitragen:** Dieses öffentliche Repository ist der Entwicklungsort des gemeinsamen Laufzeitkerns. Private Installationen konsumieren einen festen öffentlichen Commit und halten Einstellungen, Memory-Daten und historische Nachweise getrennt. Siehe [CONTRIBUTING.md](CONTRIBUTING.md).
 
 MemoryHooker verbindet lokale Wissensquellen (Markdown-Verzeichnisse, SQLite-FTS5-Volltextdatenbanken und USMC-kuratierte Tabellen) mit den Lebenszyklus-Hooks von Coding-Agenten. Das Paket kann eine dezente Erinnerung an die Gedächtnissuche ausgeben, einen kurzen thematischen Hinweis liefern oder eine lokale Suche durchführen und ausgewählte, bereinigte Treffer direkt in den Prompt-Stream injizieren. Die Architektur operiert unter strikten Sicherheits- und Resilienz-Invarianten: sie erfordert kein Netzwerk, greift rein lesend auf externe Datenbanken zu, maskiert sensible Token, begrenzt die Ausgabelänge deterministisch und verändert niemals selbstständig die Host-Konfiguration.
 

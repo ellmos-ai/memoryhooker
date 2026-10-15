@@ -4,6 +4,15 @@ All notable public changes are documented in this file.
 
 ## [Unreleased]
 
+### Shared public runtime core
+
+- Private deployments consume the public runtime instead of maintaining a second
+  `memoryhooker` package. Private settings and memory data remain separate.
+- Preserve file-root containment through resolved symlinks and Windows junctions,
+  while still supporting explicitly configured standalone files.
+- Match clue keywords at Unicode-aware word boundaries with normalized whitespace.
+  Public output policy, start suppression and change gating remain in place.
+
 ### Discoverability, Visual Architecture, ASCII 4-View Topology & Level 1 SBOM Re-Audit (Pfad B Stand 2026-10-01)
 
 - **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code strictly frozen; 0 version diffs.
