@@ -11,6 +11,7 @@ etwas ausloest, sondern schlicht: "gibt es ueberhaupt ein Backend?".
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, replace
 
@@ -33,6 +34,19 @@ _REMEMBER_TEMPLATE = (
     "[MemoryHooker] Du hast in dieser Sitzung bereits mehrfach gesucht -- "
     "es lohnt sich moeglicherweise, gezielt im Gedaechtnis-Backend nachzuschlagen."
 )
+
+
+def _keyword_matches(prompt: str, trigger: str) -> bool:
+    """Match a complete Unicode keyword or whitespace-normalized phrase."""
+    if not isinstance(trigger, str):
+        return False
+    normalized_prompt = " ".join(prompt.casefold().split())
+    normalized_trigger = " ".join(trigger.casefold().split())
+    if not normalized_trigger:
+        return False
+    return re.search(
+        rf"(?<!\w){re.escape(normalized_trigger)}(?!\w)", normalized_prompt
+    ) is not None
 
 
 def session_start_message(backend: MemoryBackend, state: SessionState) -> str | None:
@@ -126,9 +140,8 @@ def _evaluate_gated(
         return (_REMEMBER_TEMPLATE, hits) if hits else (None, [])
 
     if config.mode.active == "clue":
-        lowered = prompt.lower()
         for trigger in config.clue.triggers:
-            if trigger.lower() not in lowered:
+            if not _keyword_matches(prompt, trigger):
                 continue
             hits = _hook_search(backend, trigger, 1, config, deterministic=True)
             if hits and hits[0].rank >= config.mode.min_rank:
@@ -162,11 +175,10 @@ def _evaluate_remember(config: Config, backend: MemoryBackend, state: SessionSta
 
 
 def _evaluate_clue(prompt: str, config: Config, backend: MemoryBackend) -> str | None:
-    lowered = prompt.lower()
     if not _safe_available(backend):
         return None
     for trigger in config.clue.triggers:
-        if trigger.lower() not in lowered:
+        if not _keyword_matches(prompt, trigger):
             continue
         hits = _hook_search(backend, trigger, 1, config)
         if hits and hits[0].rank >= config.mode.min_rank:

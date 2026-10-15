@@ -25,7 +25,7 @@
 
 > [!NOTE]
 > **AI & Agent Indexing:** This repository provides an [`llms.txt`](llms.txt) machine-readable summary for AI agents, LLM tools, and lifecycle hooks.
-> **Contributing:** Development happens in the private twin `memoryhooker-provenance`; this repository carries the curated open-source distribution. See [CONTRIBUTING.md](CONTRIBUTING.md).
+> **Contributing:** This public repository owns the shared runtime core. Private deployments consume a pinned public revision and keep settings, memory data and historical evidence separate. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 MemoryHooker connects local memory sources (Markdown directories, SQLite FTS5 full-text databases, and USMC curated tables) to lifecycle hooks exposed by coding agents. It can emit an unobtrusive reminder to check memory, provide a concise clue, or perform a local search and inject selected, sanitized hits directly into the prompt stream. The package operates under strict privacy and resilience invariants: it makes zero network requests, accesses external databases in read-only mode, masks sensitive tokens, enforces strict output bounds, and never modifies host configuration automatically.
 
@@ -341,6 +341,12 @@ python -m memoryhooker install-snippet --provider codex
 python -m memoryhooker install-snippet --provider kimi
 python -m memoryhooker install-snippet --provider agy
 ```
+
+For Codex Windows sessions using PowerShell, generated `commandWindows` entries
+use `&` before a quoted executable path. The shared hook-master provider owns
+this rule, including executable paths with spaces; bare `python` commands retain
+their form. Other agent providers keep their own shell syntax. Review changed
+Codex definitions through `/hooks` before running them.
 
 > [!IMPORTANT]
 > `install-snippet` prints the exact hook configuration fragment to stdout. In accordance with `INV-UNPRIV-03` and safety principles, it never mutates host configuration files automatically. Review and merge the snippet manually into your agent settings.
