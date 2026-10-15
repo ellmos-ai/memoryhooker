@@ -342,6 +342,12 @@ python -m memoryhooker install-snippet --provider kimi
 python -m memoryhooker install-snippet --provider agy
 ```
 
+For Codex Windows sessions using PowerShell, generated `commandWindows` entries
+use `&` before a quoted executable path. The shared hook-master provider owns
+this rule, including executable paths with spaces; bare `python` commands retain
+their form. Other agent providers keep their own shell syntax. Review changed
+Codex definitions through `/hooks` before running them.
+
 > [!IMPORTANT]
 > `install-snippet` prints the exact hook configuration fragment to stdout. In accordance with `INV-UNPRIV-03` and safety principles, it never mutates host configuration files automatically. Review and merge the snippet manually into your agent settings.
 
