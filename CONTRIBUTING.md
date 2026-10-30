@@ -1,29 +1,15 @@
 # Contributing
 
-## Where development happens
+This public repository owns the `memoryhooker` runtime and its behavioral tests.
+Private deployments consume a pinned public revision; private settings, memory
+data and historical evidence are not published as part of the package.
 
-This repository is the **public, curated** side of a two-repository pair:
+Use a separate private extension only for actual private executable behavior.
+It must not shadow `memoryhooker` or duplicate the public core. The historical
+private repository retains its Git history and can act as a consumer fixture.
+Never force-push one repository's history over the other.
 
-| Repository | Role |
-|---|---|
-| `ellmos-ai/memoryhooker` | public distribution — curated, tested, release-ready |
-| `ellmos-ai/memoryhooker-provenance` | private twin — full development history |
-
-Development and the complete history live in the **private twin**. What reaches
-`main` here are curated, tested changes, brought over by squash or cherry-pick.
-
-**`main` is never force-pushed with development history.** The two branches have
-deliberately separate shapes: the private twin keeps every step, this one keeps
-the story a reader needs. Pushing one over the other destroys that distinction
-in both directions.
-
-## Practical consequences
-
-- A local clone that tracks a `master` branch belongs to the private twin, not
-  to this repository. Check `git remote -v` before pushing; a stale remote
-  reference is easy to mistake for a diverged branch.
-- Fixes made directly against this repository go on a branch taken from
-  `origin/main`, with only the fix commits on it — never a rebase of a
-  development branch onto `main`.
-- Tests must be green on the branch you actually push. A fix verified on the
-  development side is not verified here until it runs against this tree.
+Start changes from the public default branch, check `git remote -v`, run the
+behavioral suite and test the built wheel in a clean environment outside the
+checkout. Preserve local-first output policies and default start suppression.
+Do not commit personal memories, host configuration, credentials or transcripts.

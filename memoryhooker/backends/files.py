@@ -80,27 +80,30 @@ class FilesBackend:
         for root in self.roots:
             if root.is_file():
                 try:
-                    resolved = root.resolve()
-                except OSError:
-                    resolved = root.absolute()
+                    resolved = root.resolve(strict=True)
+                except (OSError, RuntimeError):
+                    continue
                 if resolved in seen:
                     continue
                 seen.add(resolved)
                 self._process_file(root, root.name, root.parent, terms, hits)
             elif root.is_dir():
+                try:
+                    resolved_root = root.resolve(strict=True)
+                except (OSError, RuntimeError):
+                    continue
                 for path in sorted(root.rglob("*.md")):
                     try:
-                        resolved = path.resolve()
-                    except OSError:
-                        resolved = path.absolute()
+                        resolved = path.resolve(strict=True)
+                        source = str(resolved.relative_to(resolved_root))
+                    except (OSError, RuntimeError, ValueError):
+                        # A directory source never grants access outside its
+                        # resolved root, including Windows junction targets.
+                        continue
                     if resolved in seen:
                         continue
                     seen.add(resolved)
-                    try:
-                        source = str(path.relative_to(root))
-                    except ValueError:
-                        source = path.name
-                    self._process_file(path, source, root, terms, hits)
+                    self._process_file(resolved, source, root, terms, hits)
 
         hits.sort(key=lambda h: h.rank, reverse=True)
         return hits[:limit]
