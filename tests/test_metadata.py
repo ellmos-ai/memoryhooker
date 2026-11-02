@@ -207,7 +207,7 @@ def test_llms_txt_content():
     content = llms_path.read_text(encoding="utf-8")
 
     assert "Version: 0.3.3" in content
-    assert "Last-checked: 2026-10-01" in content or "Last-checked: 2026-09-29" in content
+    assert "Last-checked: 2026-11-02" in content or "Last-checked: 2026-10-01" in content or "Last-checked: 2026-09-29" in content
     assert "NOTICE" in content
     assert "THIRD_PARTY_LICENSES.md" in content
     assert "THIRD_PARTY_LICENSES.txt" in content
@@ -271,7 +271,7 @@ def test_third_party_licenses_plain_text_companion():
     assert "INV-LOCAL-01" in content
     assert "INV-SLA-10" in content
     assert "RunAsInvoker" in content
-    assert "Audit Date: 2026-10-01" in content or "Audit Date: 2026-09-29" in content
+    assert "Audit Date: 2026-11-02" in content or "Audit Date: 2026-10-01" in content or "Audit Date: 2026-09-29" in content
 
 
 def test_pep621_license_files_and_pytest_config():
@@ -326,7 +326,7 @@ def test_changelog_and_marketing_log_recency():
     assert "Pfad B" in changelog or "Pfad A" in changelog
 
     marketing_log = (ROOT / "MARKETING-LOG.txt").read_text(encoding="utf-8")
-    assert "## 2026-10-01" in marketing_log or "## 2026-09-29" in marketing_log
+    assert "## 2026-11-02" in marketing_log or "## 2026-10-01" in marketing_log or "## 2026-09-29" in marketing_log
     assert "Pfad B" in marketing_log or "Pfad A" in marketing_log
 
 
@@ -369,3 +369,13 @@ def test_statutory_disclaimer_521_bgb():
 
     assert "521 BGB" in readme_en
     assert "521 BGB" in readme_de
+
+
+def test_codex_powershell_exit_code_wrapper_documented():
+    readme_en = (ROOT / "README.md").read_text(encoding="utf-8")
+    readme_de = (ROOT / "README_de.md").read_text(encoding="utf-8")
+
+    assert "$global:LASTEXITCODE" in readme_en
+    assert "$global:LASTEXITCODE" in readme_de
+    assert "commandWindows" in readme_en
+    assert "commandWindows" in readme_de

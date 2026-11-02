@@ -3,7 +3,7 @@
 Local-first memory reminders and retrieval for coding-agent lifecycle hooks.
 
 Version: 0.3.3
-Last-checked: 2026-10-01
+Last-checked: 2026-11-02
 Ecosystem: ellmos-ai
 Umbrella: open-bricks
 
@@ -20,7 +20,7 @@ Umbrella: open-bricks
 - memoryhooker/config.py: Configuration schema, mode definitions, and safe defaults.
 - memoryhooker/backends/: Local read-only retrieval adapters (USMC, Gardener, Files, BACH).
 - memoryhooker/providers/: Host-specific snippet generators (Claude Code, Codex, Kimi, Antigravity, Git, manual).
-- tests/: 213+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
+- tests/: 228+ automated behavior, metadata parity, privacy sanitization, and provider-contract tests.
 
 ## Safety properties
 

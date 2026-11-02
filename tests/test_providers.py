@@ -39,7 +39,8 @@ def test_codex_provider_emits_verified_codex_hook_shape():
     assert set(snippet["hooks"]) == {"SessionStart", "UserPromptSubmit"}
     assert "PreToolUse" not in snippet["hooks"]
     command = snippet["hooks"]["SessionStart"][0]["hooks"][0]
-    assert command["commandWindows"] == command["command"]
+    from hook_master.providers.codex import powershell_command
+    assert command["commandWindows"] == powershell_command(command["command"])
     assert command["timeout"] == 10
 
 
