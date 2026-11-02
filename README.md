@@ -7,8 +7,8 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-213%20passed%20%7C%20100%25%20green-brightgreen)](#sec-12)
-[![Verified: 2026-10-01](https://img.shields.io/badge/verified-2026--10--01-blue.svg)](#sec-12)
+[![Tests](https://img.shields.io/badge/tests-228%20passed%20%7C%20100%25%20green-brightgreen)](#sec-12)
+[![Verified: 2026-11-02](https://img.shields.io/badge/verified-2026--11--02-blue.svg)](#sec-12)
 [![Notice](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Plain--Text-success.svg)](THIRD_PARTY_LICENSES.txt)
 [![Security](https://img.shields.io/badge/security-Local--First-green.svg)](SECURITY.md)
@@ -19,7 +19,7 @@
 [![Umbrella](https://img.shields.io/badge/umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-orange.svg)](llms.txt)
 [![Third-Party: Audited](https://img.shields.io/badge/third--party-audited-success.svg)](THIRD_PARTY_LICENSES.md)
-[![Marketing Log](https://img.shields.io/badge/marketing--log-2026--10--01-blue.svg)](MARKETING-LOG.txt)
+[![Marketing Log](https://img.shields.io/badge/marketing--log-2026--11--02-blue.svg)](MARKETING-LOG.txt)
 
 [English](README.md) | [Deutsch](README_de.md)
 
@@ -343,9 +343,12 @@ python -m memoryhooker install-snippet --provider agy
 ```
 
 For Codex Windows sessions using PowerShell, generated `commandWindows` entries
-use `&` before a quoted executable path. The shared hook-master provider owns
-this rule, including executable paths with spaces; bare `python` commands retain
-their form. Other agent providers keep their own shell syntax. Review changed
+quote executable paths containing spaces with `&` and wrap the invocation in an
+exit-code-preserving statement (`$global:LASTEXITCODE = 0; <command>; $hookOk = $?; if ($LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $hookOk) { exit 1 }`).
+This ensures that if a hook fails or exits with a non-zero code, Windows PowerShell
+reliably reports that return code rather than flattening it to 1. The shared `hook-master`
+provider owns this rule, including executable paths with spaces; bare `python` commands
+retain their form. Other agent providers keep their own shell syntax. Review changed
 Codex definitions through `/hooks` before running them.
 
 > [!IMPORTANT]

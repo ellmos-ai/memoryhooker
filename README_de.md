@@ -7,8 +7,8 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![Plattform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](pyproject.toml)
 [![Lizenz](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-213%20bestanden%20%7C%20100%25%20gr%C3%BCn-brightgreen)](#sec-12)
-[![Geprüft: 2026-10-01](https://img.shields.io/badge/gepr%C3%BCft-2026--10--01-blue.svg)](#sec-12)
+[![Tests](https://img.shields.io/badge/tests-228%20bestanden%20%7C%20100%25%20gr%C3%BCn-brightgreen)](#sec-12)
+[![Geprüft: 2026-11-02](https://img.shields.io/badge/gepr%C3%BCft-2026--11--02-blue.svg)](#sec-12)
 [![Notice](https://img.shields.io/badge/Attribution-NOTICE-blue.svg)](NOTICE)
 [![Level 1 SBOM](https://img.shields.io/badge/Level%201%20SBOM-Reiner%20Text-success.svg)](THIRD_PARTY_LICENSES.txt)
 [![Sicherheit](https://img.shields.io/badge/security-Local--First-green.svg)](SECURITY.md)
@@ -19,7 +19,7 @@
 [![Dachorganisation](https://img.shields.io/badge/umbrella-open--bricks-blueviolet.svg)](https://github.com/open-bricks)
 [![LLM-Ready](https://img.shields.io/badge/LLM--Ready-llms.txt-orange.svg)](llms.txt)
 [![Drittanbieter: Geprüft](https://img.shields.io/badge/third--party-gepr%C3%BCft-success.svg)](THIRD_PARTY_LICENSES.md)
-[![Marketing-Log](https://img.shields.io/badge/marketing--log-2026--10--01-blue.svg)](MARKETING-LOG.txt)
+[![Marketing-Log](https://img.shields.io/badge/marketing--log-2026--11--02-blue.svg)](MARKETING-LOG.txt)
 
 [English](README.md) | [Deutsch](README_de.md)
 
@@ -341,6 +341,15 @@ python -m memoryhooker install-snippet --provider codex
 python -m memoryhooker install-snippet --provider kimi
 python -m memoryhooker install-snippet --provider agy
 ```
+
+Für Codex-Windows-Sitzungen unter PowerShell versehen generierte `commandWindows`-Einträge
+ausführbare Pfade mit Leerzeichen mit führendem `&` und kapseln den Aufruf in eine
+Exit-Code-erhaltende Anweisung (`$global:LASTEXITCODE = 0; <command>; $hookOk = $?; if ($LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $hookOk) { exit 1 }`).
+Dies stellt sicher, dass Windows PowerShell Nicht-Null-Rückgabewerte zuverlässig an Codex meldet,
+anstatt sie auf 1 zu verflachen. Der gemeinsame `hook-master`-Provider verwaltet diese Regel
+einschließlich Pfaden mit Leerzeichen; einfache `python`-Befehle behalten ihre Form. Andere
+Agenten-Provider behalten ihre eigene Shell-Syntax bei. Überprüfen Sie geänderte Codex-Definitionen
+über `/hooks` vor der Ausführung.
 
 > [!IMPORTANT]
 > `install-snippet` druckt das exakte Hook-Konfigurationsfragment auf stdout. Gemäß `INV-UNPRIV-03` und Sicherheitsprinzipien modifiziert es Host-Konfigurationsdateien niemals automatisch. Überprüfen und integrieren Sie das Fragment manuell in Ihre Agenten-Einstellungen.

@@ -4,6 +4,15 @@ All notable public changes are documented in this file.
 
 ## [Unreleased]
 
+### Discoverability, Windows PowerShell Exit-Code Wrapper Documentation & Level 1 SBOM Re-Audit (Pfad B Stand 2026-11-02)
+
+- **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code strictly frozen; 0 version diffs.
+- **Windows PowerShell Exit-Code Preservation Documentation**: Fully documented the exit-code-preserving wrapper (`$global:LASTEXITCODE = 0; <command>; $hookOk = $?; if ($LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $hookOk) { exit 1 }`) in Section 09 of both `README.md` and `README_de.md` ensuring full bilingual documentation parity and accurate guidance for Codex on Windows.
+- **Test Suite Modernization & Parity**: Synchronized Codex hook provider tests (`tests/test_codex_powershell.py` and `tests/test_providers.py`) with `hook-master` 0.2.0 exit-code wrapping contracts; full suite 228/228 tests passing (100% green).
+- **Level 1 SBOM Re-Audit & Plain-Text Companion**: Re-audited `THIRD_PARTY_LICENSES.md` and `THIRD_PARTY_LICENSES.txt` Stand 2026-11-02 certifying 100% permissive runtime (`hook-master` MIT, Python stdlib PSF-2.0), zero copyleft, unprivileged `RunAsInvoker` execution, and 10/10 invariant compliance (`INV-LOCAL-01`..`INV-SLA-10` all PASS).
+- **RAG & Agent Context Index (`llms.txt`)**: Updated `llms.txt` Stand 2026-11-02 baseline reflecting 228+ verified contract and behavior tests.
+- **Automated Contract Tests**: Added `test_codex_powershell_exit_code_wrapper_documented` contract test in `tests/test_metadata.py` verifying bilingual documentation of the PowerShell wrapper across both README variants.
+
 ### Shared public runtime core
 
 - Private deployments consume the public runtime instead of maintaining a second
