@@ -12,3 +12,6 @@ def test_codex_memory_hooks_invoke_quoted_python():
         handler = groups[0]["hooks"][0]
         assert handler["commandWindows"] == powershell_command(handler["command"])
         assert f'& "{sys.executable}"' in handler["commandWindows"]
+        # The README documents the exit-code wrapper; the pinned hook-master must deliver it.
+        assert handler["commandWindows"].startswith("$global:LASTEXITCODE = 0; ")
+        assert "exit $LASTEXITCODE" in handler["commandWindows"]

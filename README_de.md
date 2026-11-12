@@ -347,7 +347,7 @@ ausführbare Pfade mit Leerzeichen mit führendem `&` und kapseln den Aufruf in 
 Exit-Code-erhaltende Anweisung (`$global:LASTEXITCODE = 0; <command>; $hookOk = $?; if ($LASTEXITCODE) { exit $LASTEXITCODE }; if (-not $hookOk) { exit 1 }`).
 Dies stellt sicher, dass Windows PowerShell Nicht-Null-Rückgabewerte zuverlässig an Codex meldet,
 anstatt sie auf 1 zu verflachen. Der gemeinsame `hook-master`-Provider verwaltet diese Regel
-einschließlich Pfaden mit Leerzeichen; einfache `python`-Befehle behalten ihre Form. Andere
+einschließlich Pfaden mit Leerzeichen; einfache `python`-Befehle erhalten kein `&`, werden aber ebenso gekapselt. Andere
 Agenten-Provider behalten ihre eigene Shell-Syntax bei. Überprüfen Sie geänderte Codex-Definitionen
 über `/hooks` vor der Ausführung.
 

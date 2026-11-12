@@ -348,7 +348,7 @@ exit-code-preserving statement (`$global:LASTEXITCODE = 0; <command>; $hookOk = 
 This ensures that if a hook fails or exits with a non-zero code, Windows PowerShell
 reliably reports that return code rather than flattening it to 1. The shared `hook-master`
 provider owns this rule, including executable paths with spaces; bare `python` commands
-retain their form. Other agent providers keep their own shell syntax. Review changed
+get no `&` but are wrapped the same way. Other agent providers keep their own shell syntax. Review changed
 Codex definitions through `/hooks` before running them.
 
 > [!IMPORTANT]
