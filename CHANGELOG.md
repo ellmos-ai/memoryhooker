@@ -10,6 +10,9 @@ All notable public changes are documented in this file.
   exit-code-preserving `commandWindows` wrapper for Codex on Windows since 2026-11-02, but the pinned commit predates
   it, so an installation from the pin generated the unwrapped form. `tests/test_codex_powershell.py` now asserts the
   wrapper itself and fails against the old pin.
+  The pin step spans 20 `hook-master` commits, so it also brings: a stricter consent check (`consented` counts only
+  when it is the JSON value `true`; a malformed consent file yields an empty allowlist), quoting of interpreter paths
+  with spaces for Claude, Kimi and agy, and the new canonical script `lock_edit_guard`.
 
 ### Discoverability, Windows PowerShell Exit-Code Wrapper Documentation & Level 1 SBOM Re-Audit (Pfad B Stand 2026-11-02)
 
