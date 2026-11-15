@@ -35,6 +35,12 @@ _SENDER = re.compile(r"^(?:Von|From):\s*(.+)$", re.IGNORECASE)
 _END = "[Ende der Inbox-Nachricht]"
 
 
+def valid_actor(actor: str) -> bool:
+    """Akteur fuer Ziele ``<actor>`` und ``<actor>.<sid8>``: zulaessige Zeichen, kein ``--``,
+    kein ``.`` (der Punkt trennt die Sitzungskennung ab)."""
+    return bool(_TARGET.fullmatch(actor or "")) and "--" not in actor and "." not in actor
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 

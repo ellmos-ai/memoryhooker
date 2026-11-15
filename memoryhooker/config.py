@@ -210,9 +210,12 @@ class Config:
                 value = getattr(self.inbox, name)
                 if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
                     raise ValueError(f"[inbox].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
-            if not self.inbox.actor.strip() or "--" in self.inbox.actor:
+            from .inbox import valid_actor  # lokal: inbox importiert config nicht, aber so bleibt es zyklenfrei
+
+            if not valid_actor(self.inbox.actor):
                 raise ValueError(
-                    f"[inbox].actor darf nicht leer sein und kein '--' enthalten, nicht {self.inbox.actor!r}")
+                    "[inbox].actor braucht [A-Za-z0-9_@-], darf weder '--' noch '.' enthalten "
+                    f"und nicht auf '-' enden, nicht {self.inbox.actor!r}")
 
 
 def default_config() -> Config:

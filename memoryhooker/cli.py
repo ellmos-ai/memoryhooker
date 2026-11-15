@@ -48,7 +48,7 @@ from pathlib import Path
 
 from .backends import build_backend
 from .config import Config, load_config
-from .inbox import deliver, send
+from .inbox import deliver, send, valid_actor
 from .modes import diagnose_prompt, evaluate_prompt, session_start_message
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
@@ -290,9 +290,16 @@ def _cmd_clear(args) -> int:
 
 def _cmd_hook_run(args) -> int:
     config = load_config(args.config)
-    actor = (args.inbox_actor or "").strip()
-    if actor and "--" not in actor:
-        config.inbox.actor = actor
+    if args.inbox_actor is not None:
+        # fail-closed: Ein angegebener, aber ungueltiger Akteur darf nicht still auf den
+        # Config-Akteur zurueckfallen, sonst holt z. B. Kimi die Nachrichten von Claude ab.
+        actor = args.inbox_actor.strip()
+        if valid_actor(actor):
+            config.inbox.actor = actor
+        else:
+            config.inbox.enabled = False
+            print(f"memoryhooker: --inbox-actor {args.inbox_actor!r} ungueltig, Inbox fuer diesen Aufruf aus",
+                  file=sys.stderr)
 
     # stdin MUSS vor dem State gelesen werden: Die Sitzungskennung steht nur dort.
     payload = _read_stdin_json()
