@@ -74,6 +74,17 @@ class TriggersConfig:
 
 
 @dataclass
+class InboxConfig:
+    """Inbox-Zustellung an laufende Sitzungen (siehe ``inbox.py``); standardmäßig aus."""
+
+    enabled: bool = False
+    dir: str = "~/.agent-inbox"
+    actor: str = "claude-code"
+    max_messages: int = 5
+    max_chars: int = 4000
+
+
+@dataclass
 class ProvidersConfig:
     order: list[str] = field(
         default_factory=lambda: ["claude", "codex", "kimi", "agy", "git", "manual"]
@@ -147,6 +158,7 @@ class Config:
     providers: ProvidersConfig = field(default_factory=ProvidersConfig)
     controlcenter: ControlCenterConfig = field(default_factory=ControlCenterConfig)
     backend: BackendConfig = field(default_factory=BackendConfig)
+    inbox: InboxConfig = field(default_factory=InboxConfig)
 
     def validate(self) -> None:
         if self.mode.active not in VALID_MODES:
@@ -193,6 +205,14 @@ class Config:
                 )
         if not self.output.redaction_marker or not self.output.truncation_marker:
             raise ValueError("[output]-Marker duerfen nicht leer sein")
+        if self.inbox.enabled:  # eine abgeschaltete Inbox darf die uebrigen Hooks nie brechen
+            for name in ("max_messages", "max_chars"):
+                value = getattr(self.inbox, name)
+                if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                    raise ValueError(f"[inbox].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
+            if not self.inbox.actor.strip() or "--" in self.inbox.actor:
+                raise ValueError(
+                    f"[inbox].actor darf nicht leer sein und kein '--' enthalten, nicht {self.inbox.actor!r}")
 
 
 def default_config() -> Config:
@@ -296,6 +316,15 @@ def _config_from_dict(data: dict) -> Config:
         options=backend_options,
     )
 
+    inbox_data = data.get("inbox", {})
+    inbox = InboxConfig(
+        enabled=bool(inbox_data.get("enabled", InboxConfig.enabled)),
+        dir=str(inbox_data.get("dir", InboxConfig.dir)),
+        actor=str(inbox_data.get("actor", InboxConfig.actor)),
+        max_messages=inbox_data.get("max_messages", InboxConfig.max_messages),
+        max_chars=inbox_data.get("max_chars", InboxConfig.max_chars),
+    )
+
     return Config(
         mode=mode,
         gate=gate,
@@ -305,4 +334,5 @@ def _config_from_dict(data: dict) -> Config:
         providers=providers,
         controlcenter=controlcenter,
         backend=backend,
+        inbox=inbox,
     )

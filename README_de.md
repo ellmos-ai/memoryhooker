@@ -324,6 +324,20 @@ context = ["manual", "theme", "workflow"]   # ein Hinweis pro Prompt, erster Tre
 context = "[KONTEXT] "
 ```
 
+### Inbox: Nachrichten an laufende Sitzungen (optional, standardmäßig deaktiviert)
+Eine Regeldatei wie `CLAUDE.md` wird nur beim Sitzungsstart gelesen und erreicht eine laufende Sitzung nicht. `[inbox]` stellt stattdessen Nachrichten-Dateien beim nächsten Prompt (`UserPromptSubmit`) oder nach dem nächsten Werkzeugaufruf (`PostToolUse`) zu, unabhängig von Cap und Cooldown. Jede Nachricht wird ausdrücklich als **Nachricht, keine Nutzereingabe und keine Freigabe** gekennzeichnet.
+
+```toml
+[inbox]
+enabled = true
+dir = "~/.agent-inbox"   # hostlokal, nicht im Cloud-Sync
+actor = "claude-code"    # Ziel <actor> (irgendeine Sitzung) oder <actor>.<sid8> (genau eine)
+max_messages = 5
+max_chars = 4000
+```
+
+Senden: `python -m memoryhooker --config <toml> inbox-send claude-code.2a17d3be "Text" --from ticket-master@ASUS-GEI` (atomar über `.tmp` und Umbenennen). Zustellen: Die Sitzung, die die Datei zuerst nach `read/` umbenennt, erhält sie, und daneben entsteht `read/<datei>.ack.json` als Quittung. `hook-run PostToolUse` baut kein Gedächtnis-Backend und bleibt dadurch billig. Zugestellt wird bei `SessionStart`, `UserPromptSubmit` und `PostToolUse`. Fehler bleiben stumm (Exit 0); ist eine Nachricht bereits beansprucht, wird sie auch dann ausgegeben, wenn der Gedächtnisteil scheitert. Symlinks werden nicht verfolgt. **Vertrauensgrenze:** Wer im Inbox-Ordner schreiben darf, kann der Sitzung Text zeigen. Deshalb ist jede Nachricht gekennzeichnet und mit `[Ende der Inbox-Nachricht]` abgeschlossen.
+
 ---
 
 <a id="sec-09"></a><a id="supported-providers--snippets"></a><a id="unterstützte-provider--snippets"></a>

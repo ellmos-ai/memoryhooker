@@ -327,6 +327,22 @@ context = "[KONTEXT] "
 ---
 
 <a id="sec-09"></a><a id="supported-providers--snippets"></a><a id="unterstützte-provider--snippets"></a>
+### Inbox: Messages to Running Sessions (optional, off by default)
+A rule file such as `CLAUDE.md` is read only at session start and never reaches a running session. `[inbox]` delivers message files instead, at the next prompt (`UserPromptSubmit`) or after the next tool call (`PostToolUse`), independent of cap and cooldown. Every message is explicitly marked as a **message, not user input and not an approval**.
+
+```toml
+[inbox]
+enabled = true
+dir = "~/.agent-inbox"   # host-local, not in cloud sync
+actor = "claude-code"    # target <actor> (any session) or <actor>.<sid8> (exactly one)
+max_messages = 5
+max_chars = 4000
+```
+
+Send: `python -m memoryhooker --config <toml> inbox-send claude-code.2a17d3be "text" --from ticket-master@ASUS-GEI` (atomic via `.tmp` and rename). Delivery: the session that first renames the file into `read/` receives it, and `read/<file>.ack.json` is written as the receipt. `hook-run PostToolUse` builds no memory backend, so it stays cheap. Delivery happens on `SessionStart`, `UserPromptSubmit` and `PostToolUse`. Errors stay silent (exit 0); a message that is already claimed is printed even if the memory part fails. Symlinks are not followed. **Trust boundary:** anyone who can write to the inbox folder can show text to the session. That is why every message is marked and closed with `[Ende der Inbox-Nachricht]`.
+
+---
+
 ## Supported Providers & Snippets
 
 MemoryHooker generates configuration fragments tailored for host agent lifecycle hooks:

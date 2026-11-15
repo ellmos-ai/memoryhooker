@@ -4,7 +4,11 @@ Befehle:
 
   python -m memoryhooker check "<prompt>"     manueller Aufruf (Auftrag)
   python -m memoryhooker hook-run <event>      liest stdin-JSON, gibt
-                                                 Hook-Output aus
+                                                 Hook-Output aus (PostToolUse:
+                                                 nur Inbox-Zustellung)
+  python -m memoryhooker inbox-send <ziel> <text> --from <absender>
+                                               legt eine Nachricht in die
+                                                 Inbox (siehe inbox.py)
   python -m memoryhooker record-search         zaehlt eine Suche (fuer den
                                                  PostToolUse-Zaehler aus der
                                                  ROADMAP, manuell aufgerufen)
@@ -44,6 +48,7 @@ from pathlib import Path
 
 from .backends import build_backend
 from .config import Config, load_config
+from .inbox import deliver, send
 from .modes import diagnose_prompt, evaluate_prompt, session_start_message
 from .providers import PROVIDER_REGISTRY, resolve_provider
 from .providers.claude import ClaudeProvider
@@ -77,7 +82,9 @@ def _build_parser() -> argparse.ArgumentParser:
     p_check.set_defaults(func=_cmd_check)
 
     p_hook = sub.add_parser("hook-run", help="stdin-JSON lesen und Hook-Output schreiben")
-    p_hook.add_argument("event", choices=["SessionStart", "UserPromptSubmit"])
+    # PostToolUse stellt nur die Inbox zu (kein Gedaechtnis-Backend, damit es bei
+    # jedem Werkzeugaufruf billig bleibt); siehe inbox.py.
+    p_hook.add_argument("event", choices=["SessionStart", "UserPromptSubmit", "PostToolUse"])
     p_hook.add_argument(
         "--format",
         dest="output_format",
@@ -119,7 +126,21 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_clear.set_defaults(func=_cmd_clear)
 
+    p_send = sub.add_parser("inbox-send", help="Nachricht in die Inbox eines Akteurs oder einer Sitzung legen")
+    p_send.add_argument("target", help="<akteur> oder <akteur>.<sid8>")
+    p_send.add_argument("text", help="Nachrichtentext; '-' liest stdin")
+    p_send.add_argument("--from", dest="sender", required=True, help="Absender, z. B. claude-code@ASUS-GEI.2a17d3be")
+    p_send.set_defaults(func=_cmd_inbox_send)
+
     return parser
+
+
+def _cmd_inbox_send(args) -> int:
+    config = load_config(args.config)
+    text = sys.stdin.read() if args.text == "-" else args.text
+    path = send(config.inbox, args.target, args.sender, text)
+    print(path)
+    return 0
 
 
 def _load(args) -> tuple[Config, object]:
@@ -265,10 +286,31 @@ def _cmd_clear(args) -> int:
 
 
 def _cmd_hook_run(args) -> int:
-    config, backend = _load(args)
+    config = load_config(args.config)
 
     # stdin MUSS vor dem State gelesen werden: Die Sitzungskennung steht nur dort.
     payload = _read_stdin_json()
+    session_id = args.session_id or _extract_session_id(payload)
+    # Inbox zuerst und unabhaengig von Cap/Cooldown: eine Nachricht ist kein Gedaechtnistreffer.
+    inbox_message = deliver(config.inbox, session_id, args.event)
+    if args.event == "PostToolUse":
+        _print_hook_output(args, inbox_message)
+        return 0
+    if inbox_message is None:
+        return _memory_hook(args, config, payload, session_id, None)
+    # Die Nachricht ist schon nach read/ beansprucht: scheitert der Gedaechtnisteil,
+    # wird sie trotzdem ausgegeben (sonst ginge sie verloren).
+    try:
+        return _memory_hook(args, config, payload, session_id, inbox_message)
+    except Exception as exc:
+        print(f"memoryhooker: Gedaechtnisteil fehlgeschlagen ({type(exc).__name__}), Inbox trotzdem zugestellt",
+              file=sys.stderr)
+        _print_hook_output(args, inbox_message)
+        return 0
+
+
+def _memory_hook(args, config, payload, session_id, inbox_message) -> int:
+    backend = build_backend(config)
 
     # Ohne diese Zeile landen ALLE Sitzungen in session-default.json. Der
     # Session-Guard verliert damit seinen Sinn: `session_start_shown` bleibt fuer
@@ -278,9 +320,7 @@ def _cmd_hook_run(args) -> int:
     # sie nicht fuellen, weil Claude Code dort keine Variablen ersetzt. Die
     # Kennung kommt ausschliesslich im stdin-JSON. Die CLI-Option behaelt Vorrang,
     # damit manuelle Aufrufe und Tests weiterhin steuern koennen.
-    state_path = state_path_for_session(
-        args.session_id or _extract_session_id(payload), args.state_dir
-    )
+    state_path = state_path_for_session(session_id, args.state_dir)
     state = SessionState.load(state_path)
 
     if args.event == "SessionStart":
@@ -292,7 +332,11 @@ def _cmd_hook_run(args) -> int:
         message = "\n\n".join([*hints, message] if message else hints) or None
 
     state.save(state_path)
+    _print_hook_output(args, "\n\n".join(m for m in (inbox_message, message) if m) or None)
+    return 0
 
+
+def _print_hook_output(args, message: str | None) -> None:
     if message:
         output = {
             "hookSpecificOutput": {
@@ -306,7 +350,6 @@ def _cmd_hook_run(args) -> int:
             print(message)
         else:
             print(json.dumps(output, ensure_ascii=False))
-    return 0
 
 
 def _read_stdin_json() -> dict:
