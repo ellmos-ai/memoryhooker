@@ -339,7 +339,7 @@ max_messages = 5
 max_chars = 4000
 ```
 
-Send: `python -m memoryhooker --config <toml> inbox-send claude-code.2a17d3be "text" --from ticket-master@ASUS-GEI` (atomic via `.tmp` and rename). Delivery: the session that first renames the file into `read/` receives it, and `read/<file>.ack.json` is written as the receipt. `hook-run PostToolUse` builds no memory backend, so it stays cheap.
+Send: `python -m memoryhooker --config <toml> inbox-send claude-code.2a17d3be "text" --from ticket-master@ASUS-GEI` (atomic via `.tmp` and rename). Delivery: the session that first renames the file into `read/` receives it, and `read/<file>.ack.json` is written as the receipt. `hook-run PostToolUse` builds no memory backend, so it stays cheap. Delivery happens on `SessionStart`, `UserPromptSubmit` and `PostToolUse`. Errors stay silent (exit 0); a message that is already claimed is printed even if the memory part fails. Symlinks are not followed. **Trust boundary:** anyone who can write to the inbox folder can show text to the session. That is why every message is marked and closed with `[Ende der Inbox-Nachricht]`.
 
 ---
 

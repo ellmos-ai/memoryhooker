@@ -205,12 +205,14 @@ class Config:
                 )
         if not self.output.redaction_marker or not self.output.truncation_marker:
             raise ValueError("[output]-Marker duerfen nicht leer sein")
-        for name in ("max_messages", "max_chars"):
-            value = getattr(self.inbox, name)
-            if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-                raise ValueError(f"[inbox].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
-        if not self.inbox.actor.strip() or "--" in self.inbox.actor:
-            raise ValueError(f"[inbox].actor darf nicht leer sein und kein '--' enthalten, nicht {self.inbox.actor!r}")
+        if self.inbox.enabled:  # eine abgeschaltete Inbox darf die uebrigen Hooks nie brechen
+            for name in ("max_messages", "max_chars"):
+                value = getattr(self.inbox, name)
+                if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                    raise ValueError(f"[inbox].{name} muss eine positive Ganzzahl sein, nicht {value!r}")
+            if not self.inbox.actor.strip() or "--" in self.inbox.actor:
+                raise ValueError(
+                    f"[inbox].actor darf nicht leer sein und kein '--' enthalten, nicht {self.inbox.actor!r}")
 
 
 def default_config() -> Config:

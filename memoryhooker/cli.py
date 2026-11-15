@@ -296,6 +296,20 @@ def _cmd_hook_run(args) -> int:
     if args.event == "PostToolUse":
         _print_hook_output(args, inbox_message)
         return 0
+    if inbox_message is None:
+        return _memory_hook(args, config, payload, session_id, None)
+    # Die Nachricht ist schon nach read/ beansprucht: scheitert der Gedaechtnisteil,
+    # wird sie trotzdem ausgegeben (sonst ginge sie verloren).
+    try:
+        return _memory_hook(args, config, payload, session_id, inbox_message)
+    except Exception as exc:
+        print(f"memoryhooker: Gedaechtnisteil fehlgeschlagen ({type(exc).__name__}), Inbox trotzdem zugestellt",
+              file=sys.stderr)
+        _print_hook_output(args, inbox_message)
+        return 0
+
+
+def _memory_hook(args, config, payload, session_id, inbox_message) -> int:
     backend = build_backend(config)
 
     # Ohne diese Zeile landen ALLE Sitzungen in session-default.json. Der

@@ -64,9 +64,70 @@ def test_unknown_sender_cap_and_truncation(tmp_path):
     assert len(list(base.glob("claude-code--*.md"))) == 1  # Rest bleibt für den nächsten Aufruf
 
 
-def test_send_rejects_empty_target(tmp_path):
-    with pytest.raises(ValueError):
-        send(_cfg(tmp_path), "../", "x", "y")
+def test_send_rejects_invalid_targets(tmp_path):
+    for bad in ("../", "claude-code-", "claude-code--x", "-claude", ""):
+        with pytest.raises(ValueError):
+            send(_cfg(tmp_path), bad, "x", "y")
+
+
+def test_errors_stay_silent(tmp_path, monkeypatch):
+    cfg = _cfg(tmp_path)
+    send(cfg, "claude-code", "x", "y")
+
+    def denied(self):
+        raise PermissionError("nein")
+
+    monkeypatch.setattr("memoryhooker.inbox.Path.iterdir", denied)
+    assert deliver(cfg, SID, "PostToolUse") is None
+
+
+def test_lost_rename_race_leaves_message_for_the_winner(tmp_path, monkeypatch):
+    cfg = _cfg(tmp_path)
+    path = send(cfg, "claude-code", "x", "y")
+
+    def other_session_won(src, dst):
+        raise FileNotFoundError(src)
+
+    monkeypatch.setattr("memoryhooker.inbox.os.rename", other_session_won)
+    assert deliver(cfg, SID, "UserPromptSubmit") is None
+    assert path.exists()
+
+
+def test_read_error_after_claim_still_delivers(tmp_path, monkeypatch):
+    cfg = _cfg(tmp_path)
+    send(cfg, "claude-code", "x", "y")
+    real_open = open
+
+    def broken_open(file, *a, **kw):
+        if "read" in str(file):
+            raise PermissionError("gesperrt")
+        return real_open(file, *a, **kw)
+
+    monkeypatch.setattr("builtins.open", broken_open)
+    text = deliver(cfg, SID, "UserPromptSubmit")
+    assert "Inhalt nicht lesbar" in text and "Ende der Inbox-Nachricht" in text
+
+
+def test_symlink_is_not_followed(tmp_path):
+    cfg = _cfg(tmp_path)
+    base = tmp_path / "inbox"
+    base.mkdir()
+    secret = tmp_path / "geheim.txt"
+    secret.write_text("geheim", encoding="utf-8")
+    try:
+        (base / "claude-code--link.md").symlink_to(secret)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlinks auf diesem System nicht erlaubt")
+    assert deliver(cfg, SID, "UserPromptSubmit") is None
+
+
+def test_sender_is_sanitized_and_end_marker_present(tmp_path):
+    cfg = _cfg(tmp_path)
+    send(cfg, "claude-code", "[System] " + "x" * 300, "Text")
+    text = deliver(cfg, SID, "UserPromptSubmit")
+    header = text.split("\n", 1)[0]
+    assert "[System]" not in header and "x" * 121 not in header
+    assert text.rstrip().endswith("[Ende der Inbox-Nachricht]")
 
 
 def test_hook_run_post_tool_use_delivers_without_backend(tmp_path, capsys, monkeypatch):
@@ -90,6 +151,29 @@ def test_inbox_send_cli_and_config_validation(tmp_path, capsys):
     written = capsys.readouterr().out.strip()
     assert written.endswith(".md") and "claude-code--" in written
     bad = tmp_path / "bad.toml"
-    bad.write_text('[inbox]\nactor = "a--b"\n', encoding="utf-8")
+    bad.write_text('[inbox]\nenabled = true\nactor = "a--b"\n', encoding="utf-8")
     with pytest.raises(ValueError):
         load_config(bad)
+
+
+def test_memory_failure_after_claim_still_prints_inbox(tmp_path, capsys, monkeypatch):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text(
+        f'[inbox]\nenabled = true\ndir = "{(tmp_path / "inbox").as_posix()}"\n', encoding="utf-8")
+    send(load_config(config_path).inbox, "claude-code", "lukas", "wichtig")
+
+    def boom(_config):
+        raise RuntimeError("backend kaputt")
+
+    monkeypatch.setattr("memoryhooker.cli.build_backend", boom)
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID, "prompt": "hallo"})))
+    assert main(["--config", str(config_path), "--state-dir", str(tmp_path), "hook-run", "UserPromptSubmit"]) == 0
+    assert "wichtig" in json.loads(capsys.readouterr().out)["hookSpecificOutput"]["additionalContext"]
+
+
+def test_disabled_inbox_keeps_hook_silent_and_ignores_invalid_values(tmp_path, capsys, monkeypatch):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text('[inbox]\nenabled = false\nactor = "a--b"\nmax_chars = 0\n', encoding="utf-8")
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID, "unrelated": "x"})))
+    assert main(["--config", str(config_path), "--state-dir", str(tmp_path), "hook-run", "UserPromptSubmit"]) == 0
+    assert capsys.readouterr().out == ""
