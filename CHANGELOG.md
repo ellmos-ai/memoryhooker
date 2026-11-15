@@ -4,6 +4,13 @@ All notable public changes are documented in this file.
 
 ## [Unreleased]
 
+### Inbox: messages to running sessions (T-20261115-953740822)
+
+- **New `[inbox]` (off by default)**: `memoryhooker/inbox.py` delivers message files `<target>--*.md` from a host-local folder (default `~/.agent-inbox`) into a running session via `additionalContext`. The target is `<actor>` (any session) or `<actor>.<sid8>` (exactly one session). The first session to rename the file into `read/` wins, so a message is never delivered twice, and `read/<file>.ack.json` serves as the receipt. Every message is marked as a message, not user input and not an approval.
+- **`hook-run PostToolUse`**: delivers only the inbox and builds no memory backend, so it stays cheap on every tool call. `UserPromptSubmit` prepends inbox messages to the normal hits, independent of cap and cooldown.
+- **`inbox-send <target> <text> --from <sender>`**: atomic drop via `.tmp` and rename. Invalid targets are rejected.
+- Background: a test on 2026-11-15 showed that a note written into `~/CLAUDE.md` does not reach a running session. Tests: `tests/test_inbox.py` (8). Full suite 236 passed.
+
 ### Discoverability, Windows PowerShell Exit-Code Wrapper Documentation & Level 1 SBOM Re-Audit (Pfad B Stand 2026-11-02)
 
 - **Version-Freeze Disziplin (T-20260920-167562623)**: Maintained version `0.3.3` in `pyproject.toml`, `ellmos-module.v2.json`, and source code strictly frozen; 0 version diffs.
