@@ -74,6 +74,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", type=Path, default=None, help="Pfad zu memoryhooker.toml")
     parser.add_argument("--state-dir", type=Path, default=None, help="Override fuer den State-Ordner")
     parser.add_argument("--session-id", default=None, help="Session-ID zur State-Trennung")
+    # Teilen sich mehrere Anbieter eine Config (z. B. Claude und Kimi), braucht jeder seinen
+    # eigenen Inbox-Akteur, sonst nimmt der eine dem anderen allgemein adressierte Nachrichten weg.
+    parser.add_argument("--inbox-actor", default=None, help="ueberschreibt [inbox].actor fuer diesen Aufruf")
 
     sub = parser.add_subparsers(required=True)
 
@@ -287,6 +290,9 @@ def _cmd_clear(args) -> int:
 
 def _cmd_hook_run(args) -> int:
     config = load_config(args.config)
+    actor = (args.inbox_actor or "").strip()
+    if actor and "--" not in actor:
+        config.inbox.actor = actor
 
     # stdin MUSS vor dem State gelesen werden: Die Sitzungskennung steht nur dort.
     payload = _read_stdin_json()

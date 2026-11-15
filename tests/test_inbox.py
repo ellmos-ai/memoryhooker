@@ -188,6 +188,24 @@ def test_render_failure_after_claim_still_reports_the_claimed_file(tmp_path, mon
     monkeypatch.setattr("memoryhooker.inbox._render", broken)
     text = deliver(cfg, SID, "UserPromptSubmit")
     assert path.name in text and "nicht darstellbar" in text
+    assert "KEINE Nutzereingabe" in text and text.rstrip().endswith("[Ende der Inbox-Nachricht]")
+    assert deliver(cfg, SID, "UserPromptSubmit") is None  # keine zweite Zustellung
+
+
+def test_inbox_actor_override_keeps_providers_apart(tmp_path, capsys, monkeypatch):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text(
+        f'[inbox]\nenabled = true\ndir = "{(tmp_path / "inbox").as_posix()}"\nactor = "claude-code"\n',
+        encoding="utf-8")
+    inbox_cfg = load_config(config_path).inbox
+    send(inbox_cfg, "claude-code", "x", "für Claude")
+    send(inbox_cfg, "kimi-code", "x", "für Kimi")
+    common = ["--config", str(config_path), "--state-dir", str(tmp_path)]
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID})))
+    assert main([*common, "--inbox-actor", "kimi-code", "hook-run", "PostToolUse"]) == 0
+    text = json.loads(capsys.readouterr().out)["hookSpecificOutput"]["additionalContext"]
+    assert "für Kimi" in text and "für Claude" not in text
+    assert len(list((tmp_path / "inbox").glob("claude-code--*.md"))) == 1
 
 
 def test_memory_failure_after_claim_still_prints_inbox(tmp_path, capsys, monkeypatch):
