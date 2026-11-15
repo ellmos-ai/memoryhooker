@@ -188,6 +188,57 @@ def test_render_failure_after_claim_still_reports_the_claimed_file(tmp_path, mon
     monkeypatch.setattr("memoryhooker.inbox._render", broken)
     text = deliver(cfg, SID, "UserPromptSubmit")
     assert path.name in text and "nicht darstellbar" in text
+    assert "KEINE Nutzereingabe" in text and text.rstrip().endswith("[Ende der Inbox-Nachricht]")
+    assert deliver(cfg, SID, "UserPromptSubmit") is None  # keine zweite Zustellung
+
+
+def test_inbox_actor_override_keeps_providers_apart(tmp_path, capsys, monkeypatch):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text(
+        f'[inbox]\nenabled = true\ndir = "{(tmp_path / "inbox").as_posix()}"\nactor = "claude-code"\n',
+        encoding="utf-8")
+    inbox_cfg = load_config(config_path).inbox
+    send(inbox_cfg, "claude-code", "x", "für Claude")
+    send(inbox_cfg, "kimi-code", "x", "für Kimi")
+    common = ["--config", str(config_path), "--state-dir", str(tmp_path)]
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID})))
+    assert main([*common, "--inbox-actor", "kimi-code", "hook-run", "PostToolUse"]) == 0
+    text = json.loads(capsys.readouterr().out)["hookSpecificOutput"]["additionalContext"]
+    assert "für Kimi" in text and "für Claude" not in text
+    assert len(list((tmp_path / "inbox").glob("claude-code--*.md"))) == 1
+
+
+@pytest.mark.parametrize("bad", ["", "  ", "a--b", "kimi.code", "kimi-", "../x"])
+def test_invalid_inbox_actor_override_fails_closed(tmp_path, capsys, monkeypatch, bad):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text(
+        f'[inbox]\nenabled = true\ndir = "{(tmp_path / "inbox").as_posix()}"\nactor = "claude-code"\n',
+        encoding="utf-8")
+    send(load_config(config_path).inbox, "claude-code", "x", "für Claude")
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID})))
+    common = ["--config", str(config_path), "--state-dir", str(tmp_path)]
+    assert main([*common, "--inbox-actor", bad, "hook-run", "PostToolUse"]) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "" and "ungueltig" in captured.err
+    assert len(list((tmp_path / "inbox").glob("claude-code--*.md"))) == 1  # bleibt fuer Claude liegen
+
+
+def test_override_actor_receives_its_session_target(tmp_path, capsys, monkeypatch):
+    config_path = tmp_path / "mh.toml"
+    config_path.write_text(
+        f'[inbox]\nenabled = true\ndir = "{(tmp_path / "inbox").as_posix()}"\n', encoding="utf-8")
+    send(load_config(config_path).inbox, "kimi-code.2a17d3be", "x", "nur diese Kimi-Sitzung")
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps({"session_id": SID})))
+    common = ["--config", str(config_path), "--state-dir", str(tmp_path)]
+    assert main([*common, "--inbox-actor", "kimi-code", "hook-run", "PostToolUse"]) == 0
+    assert "nur diese Kimi-Sitzung" in capsys.readouterr().out
+
+
+def test_config_rejects_actor_with_dot_when_enabled(tmp_path):
+    bad = tmp_path / "bad.toml"
+    bad.write_text('[inbox]\nenabled = true\nactor = "claude.code"\n', encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_config(bad)
 
 
 def test_memory_failure_after_claim_still_prints_inbox(tmp_path, capsys, monkeypatch):
